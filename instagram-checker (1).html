@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaTrack — Followers & Unfollowers Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #e040fb;
+    --accent2: #ff6b6b;
+    --accent3: #00e5ff;
+    --gold: #ffd740;
+    --text: #f0f0ff;
+    --muted: #7070a0;
+    --highlight-bg: rgba(224,64,251,0.13);
+    --highlight-border: #e040fb;
+    --opened-bg: rgba(0,229,255,0.10);
+    --opened-border: #00e5ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 20%, rgba(224,64,251,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 70%, rgba(0,229,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,107,107,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #e040fb, #ff6b6b, #ffd740);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .logo span { font-weight: 400; opacity: 0.7; }
+  .badge {
+    background: linear-gradient(135deg, #e040fb22, #ff6b6b22);
+    border: 1px solid #e040fb55;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #e040fb;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .hero h1 .line1 { color: var(--text); }
+  .hero h1 .line2 {
+    background: linear-gradient(90deg, #e040fb, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p { color: var(--muted); font-size: 15px; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+  /* ===== UPLOAD ZONE ===== */
+  .upload-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  @media(max-width: 640px) { .upload-section { grid-template-columns: 1fr; } }
+
+  .upload-card {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-card:hover, .upload-card.drag-over {
+    border-color: var(--accent);
+    background: var(--highlight-bg);
+    transform: translateY(-2px);
+  }
+  .upload-card.loaded {
+    border-color: var(--accent3);
+    border-style: solid;
+    background: var(--opened-bg);
+  }
+  .upload-card input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .upload-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .upload-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .upload-card .file-count {
+    display: inline-block;
+    margin-top: 10px;
+    background: #00e5ff22;
+    border: 1px solid #00e5ff55;
+    color: var(--accent3);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ===== ANALYZE BTN ===== */
+  .analyze-btn {
+    display: block;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto 40px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #e040fb, #ff6b6b);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 24px rgba(224,64,251,0.3);
+    animation: fadeUp 0.6s 0.2s ease both;
+    letter-spacing: 0.3px;
+  }
+  .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(224,64,251,0.45); }
+  .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ===== STATS STRIP ===== */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s ease both;
+  }
+  @media(max-width: 640px) { .stats-strip { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card .label { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .stat-card.unfollowers .num { color: var(--accent2); }
+  .stat-card.followers .num { color: #69f0ae; }
+  .stat-card.following .num { color: var(--accent); }
+  .stat-card.mutual .num { color: var(--gold); }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.5s 0.05s ease both;
+  }
+  .tab-btn {
+    padding: 9px 20px;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-btn .count-pill {
+    background: var(--border);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--highlight-bg);
+  }
+  .tab-btn.active .count-pill { background: var(--accent); color: #fff; }
+
+  /* ===== SEARCH ===== */
+  .search-bar {
+    position: relative;
+    margin-bottom: 18px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+  .search-bar input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 18px 13px 44px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-bar input:focus { border-color: var(--accent); }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-bar .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  /* ===== LIST ===== */
+  .list-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+  .list-header {
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .list-body { max-height: 540px; overflow-y: auto; }
+  .list-body::-webkit-scrollbar { width: 5px; }
+  .list-body::-webkit-scrollbar-track { background: transparent; }
+  .list-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ===== USER ROW ===== */
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid #1e1e2a;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .user-row:last-child { border-bottom: none; }
+  .user-row:hover { background: rgba(255,255,255,0.03); }
+  .user-row.opened {
+    background: var(--opened-bg) !important;
+    border-left: 3px solid var(--accent3);
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    color: #fff;
+  }
+  .avatar .ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(var(--bg), var(--bg)) padding-box,
+                linear-gradient(135deg, #e040fb, #ff6b6b, #ffd740) border-box;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .username {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s;
+  }
+  .user-row:hover .username { color: var(--accent3); }
+  .user-row.opened .username { color: var(--accent3); }
+  .fullname {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-actions { display: flex; align-items: center; gap: 8px; }
+  .open-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .open-btn:hover {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: var(--opened-bg);
+  }
+  .user-row.opened .open-btn {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: var(--opened-bg);
+  }
+  .type-tag {
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .type-tag.unf { background: rgba(255,107,107,0.15); color: var(--accent2); border: 1px solid rgba(255,107,107,0.3); }
+  .type-tag.fol { background: rgba(105,240,174,0.12); color: #69f0ae; border: 1px solid rgba(105,240,174,0.3); }
+  .type-tag.mut { background: rgba(255,215,64,0.12); color: var(--gold); border: 1px solid rgba(255,215,64,0.3); }
+  .opened-badge {
+    font-size: 10px;
+    color: var(--accent3);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--text); margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; line-height: 1.6; max-width: 320px; margin: 0 auto; }
+
+  /* ===== HOW TO ===== */
+  .howto {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .howto h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e040fb33, #ff6b6b33);
+    border: 1px solid #e040fb55;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
+  .step-text p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ===== TOAST ===== */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card);
+    border: 1px solid var(--accent3);
+    border-radius: 12px;
+    padding: 12px 22px;
+    color: var(--accent3);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 9999;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,229,255,0.15);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .loading-pulse { animation: pulse 1.5s infinite; }
+
+  /* ===== DEMO BANNER ===== */
+  .demo-banner {
+    background: linear-gradient(135deg, rgba(255,215,64,0.08), rgba(255,107,107,0.08));
+    border: 1px solid rgba(255,215,64,0.2);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Insta<span>Track</span></div>
+  <div class="badge">✦ Followers Checker</div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>
+      <div class="line1">Who stopped following you?</div>
+      <div class="line2">Find out instantly.</div>
+    </h1>
+    <p>Upload your Instagram followers & following JSON files to see exactly who unfollowed you — 100% offline, no login required.</p>
+  </div>
+
+  <!-- How To -->
+  <div class="howto">
+    <h2>📋 How to get your Instagram data</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <h4>Open Instagram Settings</h4>
+          <p>Go to <strong>Settings → Your activity → Download your information</strong></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <h4>Request JSON format</h4>
+          <p>Select <strong>JSON format</strong> and choose "Followers & Following" category</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <h4>Download & Extract</h4>
+          <p>Instagram will email you a ZIP. Extract and find the <strong>followers_1.json</strong> & <strong>following.json</strong> files</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <h4>Upload below & Analyze</h4>
+          <p>Upload both files below and click <strong>Analyze</strong> to see results</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo banner -->
+  <div class="demo-banner" id="demoBanner">
+    ⚡ <strong>Try Demo:</strong> No JSON files? Click "Load Demo Data" to see how it works with sample data.
+    <button onclick="loadDemo()" style="margin-left:auto;padding:6px 16px;background:rgba(255,215,64,0.15);border:1px solid rgba(255,215,64,0.4);border-radius:8px;color:var(--gold);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,215,64,0.25)'" onmouseout="this.style.background='rgba(255,215,64,0.15)'">Load Demo Data</button>
+  </div>
+
+  <!-- Upload Cards -->
+  <div class="upload-section">
+    <div class="upload-card" id="followersCard">
+      <input type="file" accept=".json" id="followersFile" onchange="handleFile('followers', this)">
+      <span class="upload-icon">👥</span>
+      <h3>Followers JSON</h3>
+      <p>Upload <strong>followers_1.json</strong><br>from your Instagram data</p>
+      <div class="file-count" id="followersCount" style="display:none"></div>
+    </div>
+    <div class="upload-card" id="followingCard">
+      <input type="file" accept=".json" id="followingFile" onchange="handleFile('following', this)">
+      <span class="upload-icon">➡️</span>
+      <h3>Following JSON</h3>
+      <p>Upload <strong>following.json</strong><br>from your Instagram data</p>
+      <div class="file-count" id="followingCount" style="display:none"></div>
+    </div>
+  </div>
+
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()" disabled>
+    🔍 Analyze Now
+  </button>
+
+  <!-- Stats -->
+  <div class="stats-strip" id="statsStrip" style="display:none">
+    <div class="stat-card unfollowers">
+      <div class="num" id="statUnf">0</div>
+      <div class="label">⚡ Unfollowers</div>
+    </div>
+    <div class="stat-card followers">
+      <div class="num" id="statFol">0</div>
+      <div class="label">✦ Your Followers</div>
+    </div>
+    <div class="stat-card following">
+      <div class="num" id="statFoll">0</div>
+      <div class="label">➡ You Follow</div>
+    </div>
+    <div class="stat-card mutual">
+      <div class="num" id="statMut">0</div>
+      <div class="label">⭐ Mutual</div>
+    </div>
+  </div>
+
+  <!-- Tabs & List -->
+  <div id="resultsSection" style="display:none">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="setTab('unfollowers')" id="tab-unfollowers">
+        ⚡ Not Following Back <span class="count-pill" id="pill-unfollowers">0</span>
+      </button>
+      <button class="tab-btn" onclick="setTab('followers')" id="tab-followers">
+        👥 Your Followers <span class="count-pill" id="pill-followers">0</span>
+      </button>
+      <button class="tab-btn" onclick="setTab('following')" id="tab-following">
+        ➡ You Follow <span class="count-pill" id="pill-following">0</span>
+      </button>
+      <button class="tab-btn" onclick="setTab('mutual')" id="tab-mutual">
+        ⭐ Mutual <span class="count-pill" id="pill-mutual">0</span>
+      </button>
+    </div>
+
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search username..." oninput="renderList()">
+    </div>
+
+    <div class="list-container">
+      <div class="list-header">
+        <span id="listLabel">Profiles</span>
+        <span id="openedInfo" style="color:var(--accent3);font-size:11px;"></span>
+      </div>
+      <div class="list-body" id="listBody"></div>
+    </div>
+  </div>
+</main>
+
+<div id="toast">✓ Profile opened</div>
+
+<script>
+  let followersData = [];
+  let followingData = [];
+  let openedProfiles = new Set();
+  let currentTab = 'unfollowers';
+  let allData = { unfollowers: [], followers: [], following: [], mutual: [] };
+
+  const AVATAR_COLORS = [
+    ['#e040fb','#9c27b0'], ['#ff6b6b','#e53935'],
+    ['#00e5ff','#0097a7'], ['#ffd740','#ff8f00'],
+    ['#69f0ae','#00897b'], ['#ff6e40','#bf360c'],
+    ['#40c4ff','#0277bd'], ['#ea80fc','#7b1fa2']
+  ];
+
+  function getAvatarColor(username) {
+    let sum = 0;
+    for (let c of username) sum += c.charCodeAt(0);
+    return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+  }
+
+  /*
+   * UNIVERSAL INSTAGRAM JSON PARSER
+   * Handles every known Instagram data export format:
+   *
+   * Format A (followers_1.json) — Array of objects with string_list_data:
+   *   [ { "title":"", "media_list_data":[], "string_list_data":[{"href":"https://www.instagram.com/user","value":"user","timestamp":0}] } ]
+   *
+   * Format B (following.json) — Object with relationships_following key:
+   *   { "relationships_following": [ { "title":"", "string_list_data":[{"href":"...","value":"user","timestamp":0}] } ] }
+   *
+   * Format C — Nested object with any key containing an array of string_list_data items
+   *   { "some_key": [ { "string_list_data": [...] } ] }
+   *
+   * Format D — Flat array of {value, href} objects (older exports)
+   *   [ {"value":"user","href":"https://..."} ]
+   *
+   * Format E — Flat array of strings
+   *   ["user1","user2",...]
+   *
+   * Format F — Object with "data" key (some third-party tools):
+   *   { "data": [ ... ] }
+   *
+   * Format G — Array of {username, ...} objects (some scrapers)
+   *   [ {"username":"user1"}, {"username":"user2"} ]
+   */
+  function parseInstagramJSON(raw) {
+    const profiles = [];
+    const seen = new Set();
+
+    function addProfile(value, href) {
+      if (!value || typeof value !== 'string') return;
+      const username = value.trim().replace(/^@/, '');
+      if (!username || seen.has(username)) return;
+      seen.add(username);
+      profiles.push({ username, href: href || '' });
+    }
+
+    function walkArray(arr) {
+      if (!Array.isArray(arr)) return;
+      for (const item of arr) {
+        if (!item) continue;
+
+        if (item.string_list_data) {
+          const sld = item.string_list_data;
+          let foundValue = false;
+          // followers_1.json: string_list_data[].value contains username
+          if (Array.isArray(sld)) {
+            for (const d of sld) {
+              if (d && d.value) {
+                addProfile(d.value, d.href || '');
+                foundValue = true;
+              }
+            }
+          }
+          // following.json: username is in "title" field, string_list_data has no "value"
+          // e.g. { "title": "actorvijay", "string_list_data": [{ "href": "...", "timestamp": ... }] }
+          if (!foundValue && typeof item.title === 'string' && item.title.trim()) {
+            const href = (Array.isArray(sld) && sld[0] && sld[0].href) ? sld[0].href : '';
+            addProfile(item.title, href);
+          }
+        }
+        else if (typeof item.value === 'string') {
+          addProfile(item.value, item.href || '');
+        }
+        else if (typeof item === 'string') {
+          addProfile(item, '');
+        }
+        else if (typeof item.username === 'string') {
+          addProfile(item.username, item.href || '');
+        }
+        else if (typeof item.title === 'string' && item.title.trim()) {
+          addProfile(item.title, item.href || '');
+        }
+        else if (Array.isArray(item)) {
+          walkArray(item);
+        }
+      }
+    }
+
+    if (Array.isArray(raw)) {
+      walkArray(raw);
+    } else if (raw && typeof raw === 'object') {
+      for (const key of Object.keys(raw)) {
+        const val = raw[key];
+        if (Array.isArray(val)) {
+          walkArray(val);
+        } else if (val && typeof val === 'object') {
+          for (const k2 of Object.keys(val)) {
+            if (Array.isArray(val[k2])) walkArray(val[k2]);
+          }
+        }
+      }
+    }
+
+    return profiles;
+  }
+
+  function handleFile(type, input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Show loading state
+    const cardId = type === 'followers' ? 'followersCard' : 'followingCard';
+    const countId = type === 'followers' ? 'followersCount' : 'followingCount';
+    document.getElementById(countId).style.display = 'inline-block';
+    document.getElementById(countId).textContent = '⏳ Reading file...';
+    document.getElementById(countId).style.color = 'var(--muted)';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        let raw;
+        try {
+          raw = JSON.parse(e.target.result);
+        } catch (parseErr) {
+          // Try fixing common JSON issues (BOM, trailing commas)
+          let text = e.target.result.replace(/^\uFEFF/, ''); // strip BOM
+          text = text.replace(/,\s*([}\]])/g, '$1');          // trailing commas
+          raw = JSON.parse(text);
+        }
+
+        const profiles = parseInstagramJSON(raw);
+
+        if (profiles.length === 0) {
+          document.getElementById(countId).textContent = '❌ No profiles found';
+          document.getElementById(countId).style.color = 'var(--accent2)';
+          showToast('❌ No profiles found in this file. Is it the right JSON?');
+          // Show debug info
+          showDebugInfo(file.name, raw);
+          return;
+        }
+
+        if (type === 'followers') {
+          followersData = profiles;
+        } else {
+          followingData = profiles;
+        }
+
+        document.getElementById(cardId).classList.add('loaded');
+        document.getElementById(countId).style.display = 'inline-block';
+        document.getElementById(countId).style.color = '';
+        document.getElementById(countId).textContent = `✓ ${profiles.length} profiles loaded`;
+        checkReady();
+        showToast(`✓ ${profiles.length} profiles loaded from ${file.name}`);
+
+      } catch (err) {
+        document.getElementById(countId).textContent = '❌ Invalid JSON';
+        document.getElementById(countId).style.color = 'var(--accent2)';
+        showToast(`❌ Could not parse ${file.name} — is it a valid JSON file?`);
+        console.error('JSON parse error:', err);
+      }
+    };
+    reader.onerror = () => {
+      showToast('❌ Could not read file. Try again.');
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function showDebugInfo(filename, raw) {
+    const type = Array.isArray(raw) ? `Array[${raw.length}]` : `Object{${Object.keys(raw).join(', ')}}`;
+    console.warn(`[InstaTrack] File "${filename}" parsed as: ${type}`);
+    console.warn('[InstaTrack] First item:', Array.isArray(raw) ? raw[0] : Object.values(raw)[0]);
+  }
+
+  function checkReady() {
+    document.getElementById('analyzeBtn').disabled = !(followersData.length && followingData.length);
+  }
+
+  function analyze() {
+    const followerSet = new Set(followersData.map(p => p.username));
+    const followingSet = new Set(followingData.map(p => p.username));
+
+    allData.unfollowers = followingData.filter(p => !followerSet.has(p.username));
+    allData.followers = followersData;
+    allData.following = followingData;
+    allData.mutual = followingData.filter(p => followerSet.has(p.username));
+
+    document.getElementById('statUnf').textContent = allData.unfollowers.length;
+    document.getElementById('statFol').textContent = followersData.length;
+    document.getElementById('statFoll').textContent = followingData.length;
+    document.getElementById('statMut').textContent = allData.mutual.length;
+
+    document.getElementById('pill-unfollowers').textContent = allData.unfollowers.length;
+    document.getElementById('pill-followers').textContent = allData.followers.length;
+    document.getElementById('pill-following').textContent = allData.following.length;
+    document.getElementById('pill-mutual').textContent = allData.mutual.length;
+
+    document.getElementById('statsStrip').style.display = 'grid';
+    document.getElementById('resultsSection').style.display = 'block';
+
+    document.getElementById('statsStrip').style.animation = 'fadeUp 0.5s ease both';
+    document.getElementById('resultsSection').style.animation = 'fadeUp 0.5s 0.1s ease both';
+
+    setTab('unfollowers');
+    document.getElementById('statsStrip').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`🔍 Analysis complete! Found ${allData.unfollowers.length} non-followers.`);
+  }
+
+  function setTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('searchInput').value = '';
+    renderList();
+  }
+
+  function renderList() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    let data = allData[currentTab] || [];
+    if (query) data = data.filter(p => p.username.toLowerCase().includes(query));
+
+    const labels = {
+      unfollowers: '⚡ Not following you back',
+      followers: '👥 Your followers',
+      following: '➡ Accounts you follow',
+      mutual: '⭐ Mutual follows'
+    };
+    document.getElementById('listLabel').textContent = `${labels[currentTab]} — ${data.length} profiles`;
+
+    const openedCount = data.filter(p => openedProfiles.has(p.username)).length;
+    document.getElementById('openedInfo').textContent = openedCount > 0 ? `👁 ${openedCount} opened` : '';
+
+    const body = document.getElementById('listBody');
+    if (data.length === 0) {
+      body.innerHTML = `<div class="empty-state">
+        <div class="icon">🎉</div>
+        <h3>${query ? 'No results found' : 'Nothing here!'}</h3>
+        <p>${query ? 'Try a different search term.' : 'No accounts in this category.'}</p>
+      </div>`;
+      return;
+    }
+
+    const tagMap = { unfollowers: 'unf', followers: 'fol', following: 'fol', mutual: 'mut' };
+    const tagLabelMap = { unfollowers: 'Not Following', followers: 'Follower', following: 'Following', mutual: 'Mutual' };
+
+    body.innerHTML = data.map(profile => {
+      const isOpened = openedProfiles.has(profile.username);
+      const [bg1, bg2] = getAvatarColor(profile.username);
+      const initial = profile.username[0].toUpperCase();
+      const tag = tagMap[currentTab];
+      const tagLabel = tagLabelMap[currentTab];
+
+      return `<div class="user-row${isOpened ? ' opened' : ''}" id="row-${profile.username.replace(/[^a-zA-Z0-9]/g,'_')}" onclick="openProfile('${profile.username}', '${profile.href || ''}')">
+        <div class="avatar" style="background:linear-gradient(135deg,${bg1},${bg2})">
+          <div class="ring"></div>
+          ${initial}
+        </div>
+        <div class="user-info">
+          <div class="username">@${profile.username}</div>
+          <div class="fullname">${profile.href ? 'instagram.com/' + profile.username : 'Instagram profile'}</div>
+        </div>
+        <div class="user-actions">
+          ${isOpened ? '<span class="opened-badge">👁 Viewed</span>' : ''}
+          <span class="type-tag ${tag}">${tagLabel}</span>
+          <button class="open-btn" onclick="event.stopPropagation();openProfile('${profile.username}', '${profile.href || ''}')">
+            ${isOpened ? '↗ View Again' : '↗ Open'}
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function openProfile(username, href) {
+    const url = href && href.startsWith('http') ? href : `https://www.instagram.com/${username}/`;
+    window.open(url, '_blank', 'noopener');
+    openedProfiles.add(username);
+    renderList();
+    showToast(`↗ Opened @${username}`);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ===== DEMO DATA =====
+  function loadDemo() {
+    const demoFollowers = [
+      'user_alex','user_sara','user_mike','user_priya','user_john',
+      'user_emma','user_ravi','user_lena','user_carlos','user_nina',
+      'user_tom','user_yuki','user_anya','user_omar','user_chloe',
+      'user_dev','user_maya','user_leo','user_zara','user_finn'
+    ].map(u => ({ username: u, href: '' }));
+
+    const demoFollowing = [
+      'user_alex','user_sara','user_mike','user_ghost1','user_ghost2',
+      'user_emma','user_ravi','user_lena','user_unfollowed1','user_nina',
+      'user_unfollowed2','user_yuki','user_anya','user_unfollowed3','user_chloe',
+      'user_dev','user_maya','user_gone4','user_zara','user_ghost5',
+      'user_brand1','user_celeb2'
+    ].map(u => ({ username: u, href: '' }));
+
+    followersData = demoFollowers;
+    followingData = demoFollowing;
+
+    document.getElementById('followersCard').classList.add('loaded');
+    document.getElementById('followersCount').style.display = 'inline-block';
+    document.getElementById('followersCount').textContent = `✓ ${demoFollowers.length} demo followers`;
+    document.getElementById('followingCard').classList.add('loaded');
+    document.getElementById('followingCount').style.display = 'inline-block';
+    document.getElementById('followingCount').textContent = `✓ ${demoFollowing.length} demo following`;
+
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('demoBanner').innerHTML = `<span style="color:var(--gold)">⚡ Demo data loaded!</span> Click <strong>Analyze Now</strong> to see results.`;
+    showToast('✓ Demo data loaded! Click Analyze Now.');
+  }
+
+  // Drag-and-drop
+  ['followersCard','followingCard'].forEach(id => {
+    const card = document.getElementById(id);
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const type = id === 'followersCard' ? 'followers' : 'following';
+      const input = document.getElementById(type + 'File');
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleFile(type, input);
+    });
+  });
+</script>
+</body>
+</html>
