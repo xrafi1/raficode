@@ -162,7 +162,7 @@
             // Fetch operators from OneAPI if we haven't already
             if(!operatorsLoaded) fetchOperators();
         } else {
-            alert(serviceName.toUpperCase() + " service is under construction. Try Prepaid!");
+            alert(serviceName.toUpperCase() + " service abhi ban rahi hai. Kripya 'Prepaid' test karein!");
         }
     }
 
@@ -243,7 +243,8 @@
             console.error("Recharge Error:", error);
             msgDiv.classList.remove('hidden');
             msgDiv.className = "text-sm font-medium mb-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-200";
-            msgDiv.innerHTML = "<i class="fa-solid fa-triangle-exclamation"></i> Network error. Please try again.";
+            // YAHAN ERROR THI - Double quotes fixed to single quotes
+            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error. Please try again.';
         }
 
         // Reset UI
