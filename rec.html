@@ -13,7 +13,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { brand: { DEFAULT: '#6C48FA', light: '#8E72FC', bg: '#F3F4F6' } }
+                    colors: { brand: { DEFAULT: '#6C48FA', light: '#8E72FC', bg: '#F3F4F6', text: '#333333' } }
                 }
             }
         }
@@ -22,13 +22,15 @@
         body { background-color: #e5e7eb; }
         .app-container { max-width: 480px; margin: 0 auto; background-color: #F4F5F9; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow-x: hidden; }
         .hidden { display: none !important; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
 
 <div class="app-container pb-20">
     
-    <header class="bg-brand text-white px-6 pt-10 pb-20 rounded-b-3xl relative">
+    <header id="main-header" class="bg-brand text-white px-6 pt-10 pb-20 rounded-b-3xl relative transition-all">
         <div class="flex justify-between items-center">
             <button onclick="goHome()" class="text-2xl"><i class="fa-solid fa-house"></i></button>
             <div class="flex items-center gap-2">
@@ -43,7 +45,7 @@
         </div>
     </header>
 
-    <div class="px-5 -mt-12 relative z-10">
+    <div id="wallet-card" class="px-5 -mt-12 relative z-10 transition-all">
         <div class="bg-white rounded-2xl p-6 shadow-sm flex justify-between items-center">
             <div>
                 <p class="text-gray-600 font-medium mb-1">Wallet Balance</p>
@@ -60,19 +62,19 @@
             <div class="grid grid-cols-4 gap-y-6 gap-x-2">
                 <div onclick="openService('prepaid')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-mobile-screen"></i></div>
-                    <span class="text-xs font-medium text-gray-700 text-center">Prepaid</span>
+                    <span class="text-[11px] font-medium text-gray-700 text-center">Prepaid</span>
                 </div>
                 <div onclick="openService('dth')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-tv"></i></div>
-                    <span class="text-xs font-medium text-gray-700 text-center">Dth</span>
+                    <span class="text-[11px] font-medium text-gray-700 text-center">Dth</span>
                 </div>
                 <div onclick="openService('electricity')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-bolt"></i></div>
-                    <span class="text-xs font-medium text-gray-700 text-center">Electricity</span>
+                    <span class="text-[11px] font-medium text-gray-700 text-center">Electricity</span>
                 </div>
                 <div onclick="openService('fastag')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-car"></i></div>
-                    <span class="text-xs font-medium text-gray-700 text-center">FasTag</span>
+                    <span class="text-[11px] font-medium text-gray-700 text-center">FasTag</span>
                 </div>
             </div>
         </div>
@@ -100,13 +102,15 @@
                         <option value="jio">Jio</option>
                         <option value="vodafoneIdea">VI (Vodafone Idea)</option>
                         <option value="bsnlTopup">BSNL Topup</option>
-                        <option value="bsnlCombo">BSNL Combo</option>
                     </select>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Amount (₹)</label>
-                    <input type="number" id="recharge-amount" required placeholder="Enter Amount" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
+                <div class="mb-6 relative">
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="block text-xs font-medium text-gray-500">Amount (₹)</label>
+                        <button type="button" onclick="openPlans()" class="text-xs font-semibold text-brand hover:underline">Browse Plans</button>
+                    </div>
+                    <input type="number" id="recharge-amount" required placeholder="Enter Amount" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand font-bold text-lg">
                 </div>
 
                 <div id="api-message" class="text-sm font-medium mb-4 hidden"></div>
@@ -118,7 +122,47 @@
         </div>
     </main>
 
-    <nav class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-200 flex justify-between px-6 py-3 pb-6 rounded-t-2xl z-50">
+    <main id="view-plans" class="absolute top-0 left-0 w-full min-h-screen bg-[#F4F5F9] z-50 hidden pb-6">
+        <div class="bg-white px-5 py-4 flex items-center gap-4 shadow-sm sticky top-0 z-10">
+            <button onclick="closePlans()" class="text-brand text-xl"><i class="fa-solid fa-chevron-left"></i></button>
+            <h2 class="text-lg font-semibold text-gray-800">Choose Plan</h2>
+        </div>
+
+        <div class="px-4 mt-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between border border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg" id="plan-op-logo">Jio</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 tracking-wide" id="plan-number-display">8822112236</h3>
+                        <p class="text-xs text-gray-500 mt-0.5" id="plan-op-name">Reliance Jio Infocomm Limited • India</p>
+                    </div>
+                </div>
+                <button onclick="closePlans()" class="text-gray-400 hover:text-brand"><i class="fa-regular fa-pen-to-square"></i></button>
+            </div>
+
+            <div class="mt-4 bg-white rounded-xl px-4 py-3 border border-gray-100 shadow-sm">
+                <input type="text" placeholder="Search plan by amount" class="w-full text-sm outline-none text-gray-700 bg-transparent">
+            </div>
+
+            <div class="flex items-center justify-between mt-4 mb-2">
+                <div class="flex gap-2 overflow-x-auto hide-scroll w-full pb-1">
+                    <button class="whitespace-nowrap px-4 py-1.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-brand shadow-sm">Smart Phone</button>
+                    <button class="whitespace-nowrap px-4 py-1.5 bg-transparent text-gray-500 rounded-full text-sm font-medium">Popular</button>
+                    <button class="whitespace-nowrap px-4 py-1.5 bg-transparent text-gray-500 rounded-full text-sm font-medium">Entertainment</button>
+                </div>
+            </div>
+
+            <div id="plans-loading" class="mt-10 flex flex-col items-center justify-center hidden">
+                <i class="fa-solid fa-circle-notch fa-spin text-brand text-3xl mb-3"></i>
+                <p class="text-gray-500 text-sm font-medium">Loading best offers for you...</p>
+            </div>
+
+            <div id="plans-container" class="mt-3 space-y-4 pb-10">
+                </div>
+        </div>
+    </main>
+
+    <nav id="bottom-nav" class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-200 flex justify-between px-6 py-3 pb-6 rounded-t-2xl z-40 transition-transform">
         <div onclick="goHome()" class="flex flex-col items-center text-brand relative w-1/4 cursor-pointer">
             <i class="fa-solid fa-house text-xl mb-1 mt-2"></i>
             <span class="text-[10px] font-medium">Home</span>
@@ -138,17 +182,29 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     // ==============================================================
-    // ONEAPI CONFIGURATION
+    // CONFIGURATION
     // ==============================================================
     const API_KEY = "dVz7nEga8Yu832qw6TME1kut"; 
     const BASE_URL = "https://backend.oneapi.in";
 
+    // View Elements
     const viewHome = document.getElementById('view-home');
     const viewPrepaid = document.getElementById('view-prepaid');
+    const viewPlans = document.getElementById('view-plans');
+    const bottomNav = document.getElementById('bottom-nav');
+    const header = document.getElementById('main-header');
+    const walletCard = document.getElementById('wallet-card');
 
+    // ==============================================================
+    // NAVIGATION LOGIC
+    // ==============================================================
     function goHome() {
         viewPrepaid.classList.add('hidden');
+        viewPlans.classList.add('hidden');
         viewHome.classList.remove('hidden');
+        bottomNav.classList.remove('translate-y-full');
+        header.classList.remove('hidden');
+        walletCard.classList.remove('hidden');
         document.getElementById('api-message').classList.add('hidden');
     }
 
@@ -162,46 +218,176 @@
     }
 
     // ==============================================================
-    // INSTANT AUTO DETECT OPERATOR FROM NUMBER
+    // AUTO DETECT OPERATOR
     // ==============================================================
     function autoDetectOperator(number) {
         const selectBox = document.getElementById('operator-select');
-        
-        // Remove non-numeric characters
         number = number.replace(/\D/g,'');
         
-        // Check when user types 4 digits
         if (number.length >= 4) {
             const prefix2 = number.substring(0, 2);
             let detectedOpCode = "";
 
-            // Mapping based on Indian Telecom Series
-            if (['98','99','90','89','88','81'].includes(prefix2)) {
-                detectedOpCode = "airtel";
-            } 
-            else if (['60','69','70','79','83','87'].includes(prefix2)) {
-                detectedOpCode = "jio";
-            } 
-            else if (['97','96','95','84','82','80'].includes(prefix2)) {
-                detectedOpCode = "vodafoneIdea";
-            } 
-            else if (['94','89'].includes(prefix2)) {
-                detectedOpCode = "bsnlTopup";
-            }
+            if (['98','99','90','89','88','81'].includes(prefix2)) detectedOpCode = "airtel";
+            else if (['60','69','70','79','83','87'].includes(prefix2)) detectedOpCode = "jio";
+            else if (['97','96','95','84','82','80'].includes(prefix2)) detectedOpCode = "vodafoneIdea";
+            else if (['94','89'].includes(prefix2)) detectedOpCode = "bsnlTopup";
 
-            // Auto-select and flash green to confirm to user
             if (detectedOpCode) {
                 selectBox.value = detectedOpCode;
                 selectBox.classList.add('border-green-500', 'bg-green-50');
-                setTimeout(() => {
-                    selectBox.classList.remove('border-green-500', 'bg-green-50');
-                }, 800);
+                setTimeout(() => selectBox.classList.remove('border-green-500', 'bg-green-50'), 800);
             }
         }
     }
 
     // ==============================================================
-    // ONEAPI RECHARGE LOGIC
+    // PLAN BROWSER LOGIC (ROFFER API)
+    // ==============================================================
+    function openPlans() {
+        const number = document.getElementById('mobile-number').value;
+        const opCode = document.getElementById('operator-select').value;
+
+        if(number.length !== 10) return alert("Please enter a 10-digit number first.");
+        if(!opCode) return alert("Please select an operator first.");
+
+        // Setup UI
+        document.getElementById('plan-number-display').innerText = number;
+        document.getElementById('plan-op-name').innerText = opCode.toUpperCase() + " • India";
+        
+        // Setup Logo Color
+        const logo = document.getElementById('plan-op-logo');
+        if(opCode === 'jio') { logo.innerText='Jio'; logo.className='w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg'; }
+        else if(opCode === 'airtel') { logo.innerText='airtel'; logo.className='w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-[10px]'; }
+        else if(opCode === 'vodafoneIdea') { logo.innerText='Vi'; logo.className='w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl border-2 border-yellow-400'; }
+        else { logo.innerText=opCode.substring(0,3).toUpperCase(); logo.className='w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold text-lg'; }
+
+        // Switch View
+        bottomNav.classList.add('translate-y-full'); // Hide bottom nav
+        header.classList.add('hidden');
+        walletCard.classList.add('hidden');
+        viewPrepaid.classList.add('hidden');
+        viewPlans.classList.remove('hidden');
+
+        fetchPlans(number, opCode);
+    }
+
+    function closePlans() {
+        viewPlans.classList.add('hidden');
+        viewPrepaid.classList.remove('hidden');
+        header.classList.remove('hidden');
+        walletCard.classList.remove('hidden');
+        bottomNav.classList.remove('translate-y-full');
+    }
+
+    async function fetchPlans(number, opCode) {
+        const container = document.getElementById('plans-container');
+        const loader = document.getElementById('plans-loading');
+        
+        container.innerHTML = '';
+        loader.classList.remove('hidden');
+
+        try {
+            // Using CORS Proxy for POST Request
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(`${BASE_URL}/recharge-related/roffer`);
+            
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ apiKey: API_KEY, number: parseInt(number), opCode: opCode })
+            });
+            
+            const result = await response.json();
+            loader.classList.add('hidden');
+
+            if(result.success && result.data && result.data.length > 0) {
+                renderPlans(result.data);
+            } else {
+                container.innerHTML = `
+                    <div class="text-center p-6 bg-white rounded-xl shadow-sm">
+                        <i class="fa-solid fa-folder-open text-gray-300 text-4xl mb-2"></i>
+                        <p class="text-gray-500 font-medium">No special offers found for this number.</p>
+                        <button onclick="closePlans()" class="mt-4 px-4 py-2 bg-brand text-white rounded-lg text-sm">Enter Amount Manually</button>
+                    </div>`;
+            }
+        } catch (error) {
+            console.error("Roffer Error:", error);
+            loader.classList.add('hidden');
+            container.innerHTML = `<div class="text-center p-4 text-red-500 bg-red-50 rounded-xl">Network Error. Please try again.</div>`;
+        }
+    }
+
+    function renderPlans(plans) {
+        const container = document.getElementById('plans-container');
+        
+        plans.forEach((plan, index) => {
+            // Parsing Logic to extract Validity and Data from text
+            let validity = "NA";
+            let dataAmount = "NA";
+            
+            const desc = (plan.logdesc + " " + plan.ofrtext).toLowerCase();
+            
+            // Regex to find "28 days", "1 Month", etc.
+            const valMatch = desc.match(/(\d+)\s*(days|d|month|m)/i);
+            if(valMatch) validity = valMatch[1] + " " + valMatch[2].replace('d','days').replace('m','months');
+
+            // Regex to find "1.5GB/day", "2 GB", etc.
+            const dataMatch = desc.match(/(\d+(\.\d+)?)\s*(gb|mb)(\/day|\/d)?/i);
+            if(dataMatch) dataAmount = dataMatch[0].toUpperCase();
+
+            const cardHtml = `
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative overflow-hidden">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-3xl font-bold text-gray-900">₹${plan.price}</h3>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Validity</p>
+                        <p class="font-bold text-gray-800">${validity}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Data</p>
+                        <p class="font-bold text-gray-800">${dataAmount}</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-bolt"></i> 5G</span>
+                    <span class="text-xs text-gray-600 font-medium line-clamp-1">${plan.ofrtext}</span>
+                </div>
+                
+                <div class="flex justify-between items-center border-t border-gray-100 pt-3">
+                    <button onclick="toggleDetails(${index})" class="text-sm font-semibold text-brand hover:underline" id="toggle-btn-${index}">Show More</button>
+                    <button onclick="selectPlan(${plan.price})" class="px-5 py-2 bg-brand text-white text-sm font-semibold rounded-full shadow-md hover:bg-brand-light transition-colors">Select</button>
+                </div>
+
+                <div id="plan-details-${index}" class="hidden mt-3 pt-3 border-t border-dashed border-gray-200">
+                    <p class="text-sm text-gray-600 leading-relaxed">${plan.logdesc}</p>
+                </div>
+            </div>`;
+            
+            container.innerHTML += cardHtml;
+        });
+    }
+
+    function toggleDetails(index) {
+        const detailsDiv = document.getElementById(`plan-details-${index}`);
+        const btn = document.getElementById(`toggle-btn-${index}`);
+        
+        if(detailsDiv.classList.contains('hidden')) {
+            detailsDiv.classList.remove('hidden');
+            btn.innerText = "Show Less";
+        } else {
+            detailsDiv.classList.add('hidden');
+            btn.innerText = "Show More";
+        }
+    }
+
+    function selectPlan(price) {
+        document.getElementById('recharge-amount').value = price;
+        closePlans();
+    }
+
+    // ==============================================================
+    // RECHARGE EXECUTION LOGIC
     // ==============================================================
     async function handleRechargeSubmit(event) {
         event.preventDefault();
@@ -212,19 +398,13 @@
         const btn = document.getElementById('submit-btn');
         const msgDiv = document.getElementById('api-message');
 
-        if(number.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
-        if(!opCode) return alert("Please select an operator.");
-
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
         btn.disabled = true;
         msgDiv.classList.add('hidden');
 
         try {
             const orderId = 'ORD' + Math.floor(Math.random() * 1000000000);
-            
-            // Using a CORS proxy (corsproxy.io) to bypass browser restrictions on Vercel
-            const targetUrl = `${BASE_URL}/recharge?apiKey=${API_KEY}&number=${number}&opCode=${opCode}&amount=${amount}&orderId=${orderId}`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(`${BASE_URL}/recharge?apiKey=${API_KEY}&number=${number}&opCode=${opCode}&amount=${amount}&orderId=${orderId}`);
 
             const response = await fetch(proxyUrl);
             const result = await response.json();
@@ -240,10 +420,9 @@
             }
 
         } catch (error) {
-            console.error("Recharge Error:", error);
             msgDiv.classList.remove('hidden');
             msgDiv.className = "text-sm font-medium mb-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-200";
-            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Transaction Attempted (CORS Policy Blocked Direct Response). Check API Logs.';
+            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error. Please try again.';
         }
 
         btn.innerHTML = 'Proceed to Recharge';
@@ -257,13 +436,13 @@
         const amountPrompt = prompt("Enter amount to add to wallet (INR):", "500");
         if (amountPrompt && !isNaN(amountPrompt)) {
             var options = {
-                "key": "YOUR_RAZORPAY_KEY_HERE", 
+                "key": "YOUR_RAZORPAY_KEY", 
                 "amount": amountPrompt * 100, 
                 "currency": "INR",
                 "name": "FinApp",
                 "description": "Wallet Top-up",
                 "handler": function (response){
-                    alert("Wallet successfully topped up! Payment ID: " + response.razorpay_payment_id);
+                    alert("Wallet successfully topped up!");
                     let currentBal = parseFloat(document.getElementById('wallet-balance').innerText.replace('₹ ', ''));
                     document.getElementById('wallet-balance').innerText = '₹ ' + (currentBal + parseFloat(amountPrompt)).toFixed(2);
                 },
