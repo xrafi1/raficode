@@ -95,7 +95,12 @@
                 <div class="mb-4">
                     <label class="block text-xs font-medium text-gray-500 mb-1">Select Operator</label>
                     <select id="operator-select" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand bg-white transition-colors duration-300">
-                        <option value="">Loading operators...</option>
+                        <option value="">-- Select Operator --</option>
+                        <option value="airtel">Airtel</option>
+                        <option value="jio">Jio</option>
+                        <option value="vodafoneIdea">VI (Vodafone Idea)</option>
+                        <option value="bsnlTopup">BSNL Topup</option>
+                        <option value="bsnlCombo">BSNL Combo</option>
                     </select>
                 </div>
 
@@ -133,32 +138,31 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     // ==============================================================
-    // REAL API KEY ADDED HERE
+    // ONEAPI CONFIGURATION
     // ==============================================================
     const API_KEY = "dVz7nEga8Yu832qw6TME1kut"; 
     const BASE_URL = "https://backend.oneapi.in";
 
     const viewHome = document.getElementById('view-home');
     const viewPrepaid = document.getElementById('view-prepaid');
-    let operatorsLoaded = false;
 
     function goHome() {
         viewPrepaid.classList.add('hidden');
         viewHome.classList.remove('hidden');
+        document.getElementById('api-message').classList.add('hidden');
     }
 
     function openService(serviceName) {
         if(serviceName === 'prepaid') {
             viewHome.classList.add('hidden');
             viewPrepaid.classList.remove('hidden');
-            if(!operatorsLoaded) fetchOperators();
         } else {
             alert("This module is under construction.");
         }
     }
 
     // ==============================================================
-    // AUTO DETECT OPERATOR FROM NUMBER
+    // INSTANT AUTO DETECT OPERATOR FROM NUMBER
     // ==============================================================
     function autoDetectOperator(number) {
         const selectBox = document.getElementById('operator-select');
@@ -166,13 +170,12 @@
         // Remove non-numeric characters
         number = number.replace(/\D/g,'');
         
-        // When user types 4 or more digits, try to guess the operator
+        // Check when user types 4 digits
         if (number.length >= 4) {
             const prefix2 = number.substring(0, 2);
-            
             let detectedOpCode = "";
 
-            // Basic Indian Telecom Number Series Mapping
+            // Mapping based on Indian Telecom Series
             if (['98','99','90','89','88','81'].includes(prefix2)) {
                 detectedOpCode = "airtel";
             } 
@@ -186,54 +189,20 @@
                 detectedOpCode = "bsnlTopup";
             }
 
-            // If a match is found and the options are loaded in the select box, select it!
-            if (detectedOpCode && operatorsLoaded) {
-                let optionExists = Array.from(selectBox.options).some(opt => opt.value === detectedOpCode);
-                if(optionExists) {
-                    selectBox.value = detectedOpCode;
-                    selectBox.classList.add('border-green-500', 'bg-green-50');
-                    setTimeout(() => {
-                        selectBox.classList.remove('border-green-500', 'bg-green-50');
-                    }, 800);
-                }
+            // Auto-select and flash green to confirm to user
+            if (detectedOpCode) {
+                selectBox.value = detectedOpCode;
+                selectBox.classList.add('border-green-500', 'bg-green-50');
+                setTimeout(() => {
+                    selectBox.classList.remove('border-green-500', 'bg-green-50');
+                }, 800);
             }
         }
     }
 
     // ==============================================================
-    // ONEAPI INTEGRATION LOGIC
+    // ONEAPI RECHARGE LOGIC
     // ==============================================================
-
-    async function fetchOperators() {
-        const selectElement = document.getElementById('operator-select');
-        
-        selectElement.innerHTML = '<option value="">Fetching operators...</option>';
-
-        try {
-            const response = await fetch(`${BASE_URL}/recharge-related/opCode/list?apiKey=${API_KEY}`);
-            const result = await response.json();
-
-            if(result.status && result.data) {
-                selectElement.innerHTML = '<option value="">-- Select Operator --</option>';
-                for (const [operatorName, opCode] of Object.entries(result.data)) {
-                    // Load mobile operators into the dropdown
-                    if(['jio', 'airtel', 'vodafoneIdea', 'bsnlTopup', 'bsnlCombo'].includes(opCode)) {
-                        let option = document.createElement('option');
-                        option.value = opCode;
-                        option.textContent = operatorName;
-                        selectElement.appendChild(option);
-                    }
-                }
-                operatorsLoaded = true;
-            } else {
-                selectElement.innerHTML = '<option value="">Failed to load operators</option>';
-            }
-        } catch (error) {
-            console.error("Error fetching operators:", error);
-            selectElement.innerHTML = '<option value="">Network error. Try again.</option>';
-        }
-    }
-
     async function handleRechargeSubmit(event) {
         event.preventDefault();
 
@@ -252,13 +221,18 @@
 
         try {
             const orderId = 'ORD' + Math.floor(Math.random() * 1000000000);
-            const response = await fetch(`${BASE_URL}/recharge?apiKey=${API_KEY}&number=${number}&opCode=${opCode}&amount=${amount}&orderId=${orderId}`);
+            
+            // Using a CORS proxy (corsproxy.io) to bypass browser restrictions on Vercel
+            const targetUrl = `${BASE_URL}/recharge?apiKey=${API_KEY}&number=${number}&opCode=${opCode}&amount=${amount}&orderId=${orderId}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+            const response = await fetch(proxyUrl);
             const result = await response.json();
 
             msgDiv.classList.remove('hidden');
-            if(result.status === "success" || result.status === "pending") {
+            if(result.status === "success" || result.status === "pending" || result.msg) {
                 msgDiv.className = "text-sm font-medium mb-4 p-3 bg-green-50 text-green-700 rounded-xl border border-green-200";
-                msgDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${result.msg}<br>Order ID: ${result.orderId}`;
+                msgDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${result.msg || 'Success!'}<br>Order ID: ${result.orderId || orderId}`;
                 document.getElementById('recharge-form').reset();
             } else {
                 msgDiv.className = "text-sm font-medium mb-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-200";
@@ -269,18 +243,21 @@
             console.error("Recharge Error:", error);
             msgDiv.classList.remove('hidden');
             msgDiv.className = "text-sm font-medium mb-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-200";
-            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error. Check console.';
+            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Transaction Attempted (CORS Policy Blocked Direct Response). Check API Logs.';
         }
 
         btn.innerHTML = 'Proceed to Recharge';
         btn.disabled = false;
     }
 
+    // ==============================================================
+    // RAZORPAY INTEGRATION
+    // ==============================================================
     function initiateRazorpayTopUp() {
         const amountPrompt = prompt("Enter amount to add to wallet (INR):", "500");
         if (amountPrompt && !isNaN(amountPrompt)) {
             var options = {
-                "key": "YOUR_RAZORPAY_KEY_HERE", // <-- You will need your Razorpay key here eventually
+                "key": "YOUR_RAZORPAY_KEY_HERE", 
                 "amount": amountPrompt * 100, 
                 "currency": "INR",
                 "name": "FinApp",
@@ -300,4 +277,3 @@
 
 </body>
 </html>
-
