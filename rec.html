@@ -37,7 +37,7 @@
             </div>
             <div class="flex items-center gap-4">
                 <div class="relative w-8 h-8 rounded-full bg-gray-300 overflow-hidden border-2 border-white">
-                    <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User">
+                    <img src="https://ui-avatars.com/api/?name=Rafi&background=random" alt="User">
                 </div>
             </div>
         </div>
@@ -58,27 +58,22 @@
     <main id="view-home" class="px-5 mt-5 relative z-10">
         <div class="bg-white rounded-2xl p-6 shadow-sm">
             <div class="grid grid-cols-4 gap-y-6 gap-x-2">
-                
                 <div onclick="openService('prepaid')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-mobile-screen"></i></div>
                     <span class="text-xs font-medium text-gray-700 text-center">Prepaid</span>
                 </div>
-
                 <div onclick="openService('dth')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-tv"></i></div>
                     <span class="text-xs font-medium text-gray-700 text-center">Dth</span>
                 </div>
-
                 <div onclick="openService('electricity')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-bolt"></i></div>
                     <span class="text-xs font-medium text-gray-700 text-center">Electricity</span>
                 </div>
-
                 <div onclick="openService('fastag')" class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div class="w-14 h-14 bg-brand text-white rounded-2xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-car"></i></div>
                     <span class="text-xs font-medium text-gray-700 text-center">FasTag</span>
                 </div>
-
             </div>
         </div>
     </main>
@@ -94,12 +89,12 @@
                 
                 <div class="mb-4">
                     <label class="block text-xs font-medium text-gray-500 mb-1">Mobile Number</label>
-                    <input type="tel" id="mobile-number" required placeholder="Enter 10 digit number" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
+                    <input type="tel" id="mobile-number" oninput="autoDetectOperator(this.value)" required maxlength="10" placeholder="Enter 10 digit number" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand font-semibold tracking-wider">
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-xs font-medium text-gray-500 mb-1">Select Operator</label>
-                    <select id="operator-select" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand bg-white">
+                    <select id="operator-select" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand bg-white transition-colors duration-300">
                         <option value="">Loading operators...</option>
                     </select>
                 </div>
@@ -138,17 +133,15 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     // ==============================================================
-    // CONFIGURATION - Replace with your actual OneAPI Key
+    // REAL API KEY ADDED HERE
     // ==============================================================
-    const API_KEY = "your_api_key_here"; 
+    const API_KEY = "dVz7nEga8Yu832qw6TME1kut"; 
     const BASE_URL = "https://backend.oneapi.in";
 
-    // View Management
     const viewHome = document.getElementById('view-home');
     const viewPrepaid = document.getElementById('view-prepaid');
     let operatorsLoaded = false;
 
-    // Navigation functions
     function goHome() {
         viewPrepaid.classList.add('hidden');
         viewHome.classList.remove('hidden');
@@ -158,11 +151,52 @@
         if(serviceName === 'prepaid') {
             viewHome.classList.add('hidden');
             viewPrepaid.classList.remove('hidden');
-            
-            // Fetch operators from OneAPI if we haven't already
             if(!operatorsLoaded) fetchOperators();
         } else {
-            alert(serviceName.toUpperCase() + " service abhi ban rahi hai. Kripya 'Prepaid' test karein!");
+            alert("This module is under construction.");
+        }
+    }
+
+    // ==============================================================
+    // AUTO DETECT OPERATOR FROM NUMBER
+    // ==============================================================
+    function autoDetectOperator(number) {
+        const selectBox = document.getElementById('operator-select');
+        
+        // Remove non-numeric characters
+        number = number.replace(/\D/g,'');
+        
+        // When user types 4 or more digits, try to guess the operator
+        if (number.length >= 4) {
+            const prefix2 = number.substring(0, 2);
+            
+            let detectedOpCode = "";
+
+            // Basic Indian Telecom Number Series Mapping
+            if (['98','99','90','89','88','81'].includes(prefix2)) {
+                detectedOpCode = "airtel";
+            } 
+            else if (['60','69','70','79','83','87'].includes(prefix2)) {
+                detectedOpCode = "jio";
+            } 
+            else if (['97','96','95','84','82','80'].includes(prefix2)) {
+                detectedOpCode = "vodafoneIdea";
+            } 
+            else if (['94','89'].includes(prefix2)) {
+                detectedOpCode = "bsnlTopup";
+            }
+
+            // If a match is found and the options are loaded in the select box, select it!
+            if (detectedOpCode && operatorsLoaded) {
+                let optionExists = Array.from(selectBox.options).some(opt => opt.value === detectedOpCode);
+                if(optionExists) {
+                    selectBox.value = detectedOpCode;
+                    selectBox.classList.add('border-green-500', 'bg-green-50');
+                    setTimeout(() => {
+                        selectBox.classList.remove('border-green-500', 'bg-green-50');
+                    }, 800);
+                }
+            }
         }
     }
 
@@ -170,9 +204,9 @@
     // ONEAPI INTEGRATION LOGIC
     // ==============================================================
 
-    // 1. Fetch Operators API
     async function fetchOperators() {
         const selectElement = document.getElementById('operator-select');
+        
         selectElement.innerHTML = '<option value="">Fetching operators...</option>';
 
         try {
@@ -181,9 +215,8 @@
 
             if(result.status && result.data) {
                 selectElement.innerHTML = '<option value="">-- Select Operator --</option>';
-                // Map the returned object into select options
                 for (const [operatorName, opCode] of Object.entries(result.data)) {
-                    // Filter to just show mobile operators for this specific screen
+                    // Load mobile operators into the dropdown
                     if(['jio', 'airtel', 'vodafoneIdea', 'bsnlTopup', 'bsnlCombo'].includes(opCode)) {
                         let option = document.createElement('option');
                         option.value = opCode;
@@ -201,9 +234,8 @@
         }
     }
 
-    // 2. Process Recharge API
     async function handleRechargeSubmit(event) {
-        event.preventDefault(); // Stop form from refreshing the page
+        event.preventDefault();
 
         const number = document.getElementById('mobile-number').value;
         const opCode = document.getElementById('operator-select').value;
@@ -211,24 +243,18 @@
         const btn = document.getElementById('submit-btn');
         const msgDiv = document.getElementById('api-message');
 
-        // Basic validation
-        if(number.length < 10) return alert("Please enter a valid 10-digit mobile number.");
+        if(number.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
         if(!opCode) return alert("Please select an operator.");
 
-        // UI Update
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
         btn.disabled = true;
         msgDiv.classList.add('hidden');
 
         try {
-            // Generate a random order ID for this transaction
             const orderId = 'ORD' + Math.floor(Math.random() * 1000000000);
-
-            // Make the API Call to OneAPI
             const response = await fetch(`${BASE_URL}/recharge?apiKey=${API_KEY}&number=${number}&opCode=${opCode}&amount=${amount}&orderId=${orderId}`);
             const result = await response.json();
 
-            // Display Success/Failure
             msgDiv.classList.remove('hidden');
             if(result.status === "success" || result.status === "pending") {
                 msgDiv.className = "text-sm font-medium mb-4 p-3 bg-green-50 text-green-700 rounded-xl border border-green-200";
@@ -236,37 +262,31 @@
                 document.getElementById('recharge-form').reset();
             } else {
                 msgDiv.className = "text-sm font-medium mb-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-200";
-                msgDiv.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Failed: ${result.msg || 'Transaction could not be completed.'}`;
+                msgDiv.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Failed: ${result.msg || 'Transaction failed.'}`;
             }
 
         } catch (error) {
             console.error("Recharge Error:", error);
             msgDiv.classList.remove('hidden');
             msgDiv.className = "text-sm font-medium mb-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-200";
-            // YAHAN ERROR THI - Double quotes fixed to single quotes
-            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error. Please try again.';
+            msgDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error. Check console.';
         }
 
-        // Reset UI
         btn.innerHTML = 'Proceed to Recharge';
         btn.disabled = false;
     }
 
-    // ==============================================================
-    // RAZORPAY INTEGRATION LOGIC
-    // ==============================================================
     function initiateRazorpayTopUp() {
         const amountPrompt = prompt("Enter amount to add to wallet (INR):", "500");
         if (amountPrompt && !isNaN(amountPrompt)) {
             var options = {
-                "key": "YOUR_RAZORPAY_KEY", 
+                "key": "YOUR_RAZORPAY_KEY_HERE", // <-- You will need your Razorpay key here eventually
                 "amount": amountPrompt * 100, 
                 "currency": "INR",
                 "name": "FinApp",
                 "description": "Wallet Top-up",
                 "handler": function (response){
                     alert("Wallet successfully topped up! Payment ID: " + response.razorpay_payment_id);
-                    // Update dummy wallet balance in UI
                     let currentBal = parseFloat(document.getElementById('wallet-balance').innerText.replace('₹ ', ''));
                     document.getElementById('wallet-balance').innerText = '₹ ' + (currentBal + parseFloat(amountPrompt)).toFixed(2);
                 },
@@ -280,3 +300,4 @@
 
 </body>
 </html>
+
