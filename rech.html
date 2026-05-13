@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choose Plan</title>
+<style>
+    :root {
+        --bg-color: #f2f3f8;
+        --card-bg: #ffffff;
+        --text-dark: #212121;
+        --text-gray: #757575;
+        --primary-purple: #5c2d91;
+        --jio-blue: #0f3cc9;
+        --tag-green: #e6f4ea;
+        --tag-green-text: #1e8e3e;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+        background-color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Mobile container to mimic phone screen on desktop */
+    .mobile-container {
+        width: 100%;
+        max-width: 400px;
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        position: relative;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    /* Header */
+    .header {
+        background-color: var(--card-bg);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .back-btn {
+        color: var(--primary-purple);
+        font-size: 20px;
+        text-decoration: none;
+        margin-right: 20px;
+        font-weight: bold;
+    }
+    .header-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-dark);
+        flex-grow: 1;
+        text-align: center;
+        margin-right: 30px; /* Balance the back button */
+    }
+
+    /* Content Area */
+    .content {
+        padding: 16px;
+    }
+
+    /* Cards */
+    .card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    /* User Info Card */
+    .user-info {
+        display: flex;
+        align-items: center;
+    }
+    .operator-logo {
+        width: 48px;
+        height: 48px;
+        background-color: var(--jio-blue);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+        margin-right: 16px;
+    }
+    .user-details {
+        flex-grow: 1;
+    }
+    .phone-number {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+    }
+    .operator-text {
+        font-size: 12px;
+        color: var(--text-gray);
+        line-height: 1.4;
+    }
+    .edit-icon {
+        color: var(--text-gray);
+        cursor: pointer;
+    }
+
+    /* Search */
+    .search-box {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: none;
+        font-size: 14px;
+        color: var(--text-dark);
+        background-color: var(--card-bg);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        margin-bottom: 12px;
+        outline: none;
+    }
+
+    /* Sort */
+    .sort-container {
+        text-align: right;
+        font-size: 12px;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+
+    /* Tabs */
+    .tabs-container {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 6px;
+        display: flex;
+        overflow-x: auto;
+        margin-bottom: 16px;
+        scrollbar-width: none; /* Firefox */
+    }
+    .tabs-container::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+    .tab {
+        padding: 8px 16px;
+        font-size: 14px;
+        color: var(--text-gray);
+        white-space: nowrap;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    .tab.active {
+        background-color: var(--card-bg);
+        color: var(--text-dark);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        font-weight: 500;
+    }
+
+    /* Plan Card */
+    .plan-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        margin-bottom: 16px;
+    }
+    .plan-price {
+        font-size: 28px;
+        font-weight: bold;
+        color: var(--text-dark);
+    }
+    .plan-stat {
+        text-align: center;
+    }
+    .plan-stat-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text-dark);
+    }
+    .plan-stat-label {
+        font-size: 12px;
+        color: var(--text-gray);
+        margin-top: 4px;
+    }
+    
+    .plan-icons {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--text-gray);
+    }
+    .icon-badge {
+        background-color: #f5f5f5;
+        padding: 4px 6px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        font-weight: bold;
+    }
+    .icon-5g { background-color: #2b3990; color: white; border-radius: 4px; padding: 2px 4px;}
+    .icon-yt { color: red; font-weight: bold;}
+
+    .plan-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .per-day-cost {
+        background-color: var(--tag-green);
+        color: var(--tag-green-text);
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .show-more-btn {
+        background-color: #f5f5f5;
+        color: var(--text-dark);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <!-- Header -->
+    <div class="header">
+        <a href="#" class="back-btn">&lt;</a>
+        <div class="header-title">Choose Plan</div>
+    </div>
+
+    <div class="content">
+        <!-- User Info Card -->
+        <div class="card user-info">
+            <div class="operator-logo">Jio</div>
+            <div class="user-details">
+                <div class="phone-number">8822112236</div>
+                <div class="operator-text">Reliance Jio Infocomm<br>Limited • Assam</div>
+            </div>
+            <div class="edit-icon">
+                <!-- Simple SVG Edit Icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <input type="text" class="search-box" placeholder="Search plan by amount">
+
+        <!-- Sort -->
+        <div class="sort-container">
+            Sort: Amount &uarr;
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tab active">Smart Phone</div>
+            <div class="tab">Popular</div>
+            <div class="tab">Entertainment</div>
+            <div class="tab">Travel</div>
+        </div>
+
+        <!-- Plan Card 1 -->
+        <div class="card">
+            <div class="plan-grid">
+                <div class="plan-price">₹198</div>
+                <div class="plan-stat">
+                    <div class="plan-stat-value">14 days</div>
+                    <div class="plan-stat-label">Validity</div>
+                </div>
+                <div class="plan-stat" style="text-align: right;">
+                    <div class="plan-stat-value">2 GB</div>
+                    <div class="plan-stat-label">Data</div>
+                </div>
+            </div>
+            <div class="plan-icons">
+                <span class="icon-5g">5G</span> Get Unli... 
+                <span class="icon-badge"><span class="icon-yt">▶</span> JioTV</span>
+                <span class="icon-badge">☁️</span>
+            </div>
+            <div class="plan-footer">
+                <div class="per-day-cost">
+                    <span>₹</span> Per Day Cost: NA
+                </div>
+                <button class="show-more-btn">Show More</button>
+            </div>
+        </div>
+
+        <!-- Plan Card 2 -->
+        <div class="card">
+            <div class="plan-grid">
+                <div class="plan-price">₹239</div>
+                <div class="plan-stat">
+                    <div class="plan-stat-value">22 days</div>
+                    <div class="plan-stat-label">Validity</div>
+                </div>
+                <div class="plan-stat" style="text-align: right;">
+                    <div class="plan-stat-value">1.5 GB</div>
+                    <div class="plan-stat-label">Data</div>
+                </div>
+            </div>
+            <div class="plan-icons">
+                <span class="icon-badge"><span class="icon-yt">▶</span> JioTV</span>
+                <span class="icon-badge">☁️ JioAIClo...</span>
+            </div>
+            <div class="plan-footer">
+                <div class="per-day-cost">
+                    <span>₹</span> Per Day Cost: NA
+                </div>
+                <button class="show-more-btn">Show More</button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    // Setu API Integration (Based on provided credentials)
+    const setuCredentials = {
+        clientID: "cu0degj24shfhcb24t00",
+        secret: "cu0degr24shfhcb24t0g",
+        url: "https://sandbox-coudc.setu.co/api/v2/auth/token"
+    };
+
+    async function fetchSetuToken() {
+        console.log("Attempting to fetch Setu token...");
+        
+        try {
+            const response = await fetch(setuCredentials.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Note: Depending on Setu's exact API spec, they might require Basic Auth instead of body params.
+                    // If Basic Auth is required, use:
+                    // 'Authorization': 'Basic ' + btoa(setuCredentials.clientID + ':' + setuCredentials.secret)
+                },
+                body: JSON.stringify({
+                    clientID: setuCredentials.clientID,
+                    secret: setuCredentials.secret
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Token received successfully:", data);
+            // You would normally store this token and attach it as a Bearer token to subsequent API calls.
+            
+        } catch (error) {
+            console.error("Failed to fetch token:", error);
+            console.warn("Note: If you are running this from a local HTML file, the request is likely being blocked by CORS. Backend integration is required for this API.");
+        }
+    }
+
+    // Call the function on load to demonstrate the code working
+    // Uncomment the line below to execute the API call on page load
+    // fetchSetuToken();
+
+</script>
+</body>
+</html>
