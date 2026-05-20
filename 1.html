@@ -1,1 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I am cockroach 🪳</title>
+    <style>
+        :root {
+            --mouse-x: 0deg;
+            --mouse-y: 0deg;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #030303;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            cursor: crosshair;
+        }
+
+        /* Ambient Sci-Fi Room Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000000 80%);
+            opacity: 0.7;
+            z-index: -2;
+        }
+
+        /* Glassmorphism / Atmospheric Fog Overlay */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.8) 100%);
+            backdrop-filter: blur(2px);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #fxCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #scene {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+            z-index: 5;
+        }
+
+        .text-wrapper {
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite, breath 4s ease-in-out infinite;
+            transform: rotateX(var(--mouse-y)) rotateY(var(--mouse-x));
+            transition: transform 0.1s ease-out;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            letter-spacing: 0.05em;
+            position: relative;
+            white-space: nowrap;
+            
+            /* Metallic Neon Texture */
+            background: linear-gradient(180deg, #ffffff 0%, #00ffff 40%, #003333 80%, #000000 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            /* Dynamic Depth and Glow */
+            filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.6)) 
+                    drop-shadow(0 0 30px rgba(0, 255, 255, 0.4)) 
+                    drop-shadow(0 15px 10px rgba(0,0,0,0.9));
+            
+            transform: translateZ(50px);
+        }
+
+        /* Glitch Effects */
+        h1::before, h1::after {
+            content: "I am cockroach \1F9B3"; /* Unicode for 🪳 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #ffffff 0%, #00ffff 40%, #003333 80%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        h1::before {
+            left: 3px;
+            text-shadow: -2px 0 red;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+            z-index: -1;
+        }
+
+        h1::after {
+            left: -3px;
+            text-shadow: -2px 0 blue;
+            animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+            z-index: -2;
+        }
+
+        /* Hover distortion */
+        .text-wrapper:hover h1 {
+            filter: drop-shadow(0 0 25px rgba(255, 0, 50, 0.8)) 
+                    drop-shadow(0 0 50px rgba(255, 0, 50, 0.6));
+            background: linear-gradient(180deg, #ffffff 0%, #ff0033 40%, #330000 80%, #000000 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: extreme-glitch 0.2s infinite;
+        }
+
+        /* Keyframes */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(var(--mouse-y)) rotateY(var(--mouse-x)); }
+            50% { transform: translateY(-20px) rotateX(var(--mouse-y)) rotateY(var(--mouse-x)); }
+        }
+
+        @keyframes breath {
+            0%, 100% { scale: 1; filter: brightness(1); }
+            50% { scale: 1.02; filter: brightness(1.2); }
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+            40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+            60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+            80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); }
+            20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, 1px); }
+            40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, 2px); }
+            60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, -2px); }
+            80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 1px); }
+            100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, -1px); }
+        }
+
+        @keyframes extreme-glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-4px, 2px) skewX(5deg); }
+            40% { transform: translate(4px, -2px) skewX(-5deg); }
+            60% { transform: translate(-2px, 4px) skewX(2deg); }
+            80% { transform: translate(2px, -4px) skewX(-2deg); }
+            100% { transform: translate(0); }
+        }
+        
+        /* CRT scanline overlay */
+        .scanlines {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    <canvas id="fxCanvas"></canvas>
+    
+    <div id="scene">
+        <div class="text-wrapper" id="textWrap">
+            <h1>I am cockroach 🪳</h1>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Parallax & 3D Interaction ---
+        const scene = document.getElementById('scene');
+        const textWrap = document.getElementById('textWrap');
+
+        document.addEventListener('mousemove', (e) => {
+            // Calculate rotation based on mouse position
+            const x = (window.innerWidth / 2 - e.pageX) / 25;
+            const y = (window.innerHeight / 2 - e.pageY) / 25;
+            
+            // Apply to CSS variables
+            document.documentElement.style.setProperty('--mouse-x', `${-x}deg`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}deg`);
+        });
+
+        // --- 2. Canvas WebGL/2D Effects (Particles & Cockroaches) ---
+        const canvas = document.getElementById('fxCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        let roaches = [];
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Dust Particle Class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.1;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5 - 0.2; // Slowly float up
+                this.life = Math.random();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life += 0.01;
+                
+                if (this.y < 0) this.y = height;
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+            }
+            draw() {
+                const alpha = (Math.sin(this.life) * 0.5 + 0.5) * 0.5;
+                ctx.fillStyle = `rgba(150, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Realistic Cockroach Class
+        class Cockroach {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.angle = Math.random() * Math.PI * 2;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.speed = 0;
+                this.baseSpeed = Math.random() * 4 + 3;
+                this.state = 'idle'; // idle or running
+                this.timer = Math.random() * 100;
+                this.legTime = 0;
+                this.size = Math.random() * 0.5 + 0.8;
+            }
+            
+            update() {
+                this.timer--;
+                
+                if (this.timer <= 0) {
+                    if (this.state === 'idle') {
+                        this.state = 'running';
+                        this.timer = Math.random() * 60 + 30; // run duration
+                        this.targetX = this.x + (Math.random() - 0.5) * 400;
+                        this.targetY = this.y + (Math.random() - 0.5) * 400;
+                        
+                        // Play scurry sound occasionally
+                        if (Math.random() > 0.6 && audioCtx) playScurry();
+                        
+                    } else {
+                        this.state = 'idle';
+                        this.timer = Math.random() * 120 + 60; // idle duration
+                    }
+                }
+
+                if (this.state === 'running') {
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist > 5) {
+                        const targetAngle = Math.atan2(dy, dx);
+                        // Smooth rotation
+                        let adiff = targetAngle - this.angle;
+                        // Normalize angle
+                        while (adiff > Math.PI) adiff -= Math.PI * 2;
+                        while (adiff < -Math.PI) adiff += Math.PI * 2;
+                        
+                        this.angle += adiff * 0.1;
+                        this.speed = this.baseSpeed;
+                        this.legTime += 0.5;
+                    } else {
+                        this.state = 'idle';
+                        this.timer = Math.random() * 100;
+                    }
+                } else {
+                    this.speed *= 0.8; // friction
+                }
+
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+
+                // Screen wrap
+                if (this.x < -50) this.x = width + 50;
+                if (this.x > width + 50) this.x = -50;
+                if (this.y < -50) this.y = height + 50;
+                if (this.y > height + 50) this.y = -50;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.scale(this.size, this.size);
+
+                // Body glow/shadow
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+
+                // Antennae
+                ctx.strokeStyle = '#1a0d00';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(10, -2);
+                ctx.quadraticCurveTo(25, -10, 30, -15 + Math.sin(this.legTime)*2);
+                ctx.moveTo(10, 2);
+                ctx.quadraticCurveTo(25, 10, 30, 15 - Math.sin(this.legTime)*2);
+                ctx.stroke();
+
+                // Legs (6 legs, animated when running)
+                ctx.lineWidth = 1.5;
+                for (let i = 0; i < 3; i++) {
+                    const legOffset = (i - 1) * 6;
+                    const swing = Math.sin(this.legTime + i * Math.PI) * 4;
+                    
+                    // Left leg
+                    ctx.beginPath();
+                    ctx.moveTo(legOffset, -4);
+                    ctx.lineTo(legOffset - swing, -12);
+                    ctx.lineTo(legOffset - swing - 4, -16);
+                    ctx.stroke();
+                    
+                    // Right leg
+                    ctx.beginPath();
+                    ctx.moveTo(legOffset, 4);
+                    ctx.lineTo(legOffset + swing, 12);
+                    ctx.lineTo(legOffset + swing - 4, 16);
+                    ctx.stroke();
+                }
+
+                // Main body
+                ctx.fillStyle = '#26140b';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 12, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Head/Thorax shield
+                ctx.fillStyle = '#3a2012';
+                ctx.beginPath();
+                ctx.ellipse(8, 0, 4, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 150; i++) particles.push(new Particle());
+        for (let i = 0; i < 12; i++) roaches.push(new Cockroach());
+
+        function animate() {
+            // Draw cinematic background fog effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => { p.update(); p.draw(); });
+            roaches.forEach(r => { r.update(); r.draw(); });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- 3. Synthesized Web Audio API Sound Effects ---
+        let audioCtx = null;
+        let initialized = false;
+        let droneOsc, droneGain, filterNode, distortionNode;
+
+        // Create random noise buffer for insects
+        function createNoiseBuffer() {
+            const bufferSize = audioCtx.sampleRate * 2; // 2 seconds of noise
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            return buffer;
+        }
+
+        function initAudio() {
+            if (initialized) return;
+            initialized = true;
+            
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            // 1. Cinematic Bass Drop
+            const bassOsc = audioCtx.createOscillator();
+            const bassGain = audioCtx.createGain();
+            bassOsc.type = 'sine';
+            bassOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            bassOsc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 2);
+            bassGain.gain.setValueAtTime(1, audioCtx.currentTime);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
+            
+            bassOsc.connect(bassGain);
+            bassGain.connect(audioCtx.destination);
+            bassOsc.start();
+            bassOsc.stop(audioCtx.currentTime + 3);
+
+            // 2. Continuous Creepy Drone
+            droneOsc = audioCtx.createOscillator();
+            droneOsc.type = 'sawtooth';
+            droneOsc.frequency.setValueAtTime(40, audioCtx.currentTime); // Deep hum
+
+            filterNode = audioCtx.createBiquadFilter();
+            filterNode.type = 'lowpass';
+            filterNode.frequency.setValueAtTime(200, audioCtx.currentTime);
+
+            droneGain = audioCtx.createGain();
+            droneGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+            // Distortion for cyber-horror vibe
+            distortionNode = audioCtx.createWaveShaper();
+            distortionNode.curve = makeDistortionCurve(50);
+            distortionNode.oversample = '4x';
+
+            droneOsc.connect(distortionNode);
+            distortionNode.connect(filterNode);
+            filterNode.connect(droneGain);
+            droneGain.connect(audioCtx.destination);
+            
+            droneOsc.start();
+
+            // Drone modulation loop
+            setInterval(() => {
+                const freq = 100 + Math.random() * 200;
+                filterNode.frequency.setTargetAtTime(freq, audioCtx.currentTime, 1);
+            }, 2000);
+        }
+
+        // Distortion curve generator
+        function makeDistortionCurve(amount) {
+            const k = typeof amount === 'number' ? amount : 50,
+                  n_samples = 44100,
+                  curve = new Float32Array(n_samples),
+                  deg = Math.PI / 180;
+            for (let i = 0; i < n_samples; ++i ) {
+                const x = i * 2 / n_samples - 1;
+                curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+            }
+            return curve;
+        }
+
+        // Scurry Sound Effect (Insect crawling)
+        function playScurry() {
+            if(!audioCtx) return;
+            const noiseSrc = audioCtx.createBufferSource();
+            noiseSrc.buffer = createNoiseBuffer();
+            
+            const bpf = audioCtx.createBiquadFilter();
+            bpf.type = 'bandpass';
+            bpf.frequency.value = 4000 + Math.random() * 2000;
+            
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+            // Fast LFO to chop the noise (sounds like little legs)
+            const lfo = audioCtx.createOscillator();
+            lfo.type = 'square';
+            lfo.frequency.value = 20 + Math.random() * 10;
+            const lfoGain = audioCtx.createGain();
+            lfoGain.gain.value = 1;
+            
+            lfo.connect(gain.gain);
+            noiseSrc.connect(bpf);
+            bpf.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            noiseSrc.start();
+            lfo.start();
+            noiseSrc.stop(audioCtx.currentTime + 0.4);
+            lfo.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Hover Effect - Increase distortion and pitch
+        textWrap.addEventListener('mouseenter', () => {
+            if(audioCtx && droneOsc) {
+                droneOsc.frequency.setTargetAtTime(60, audioCtx.currentTime, 0.1);
+                filterNode.frequency.setTargetAtTime(800, audioCtx.currentTime, 0.1);
+                droneGain.gain.setTargetAtTime(0.6, audioCtx.currentTime, 0.1);
+            }
+        });
+
+        textWrap.addEventListener('mouseleave', () => {
+            if(audioCtx && droneOsc) {
+                droneOsc.frequency.setTargetAtTime(40, audioCtx.currentTime, 0.5);
+                filterNode.frequency.setTargetAtTime(200, audioCtx.currentTime, 0.5);
+                droneGain.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.5);
+            }
+        });
+
+        // Initialize audio on any user interaction
+        ['click', 'keydown', 'mousemove', 'touchstart'].forEach(evt => {
+            document.addEventListener(evt, initAudio, { once: true });
+        });
+
+    </script>
+</body>
+</html>
