@@ -1,540 +1,840 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I am cockroach 🪳</title>
-    <style>
-        :root {
-            --mouse-x: 0deg;
-            --mouse-y: 0deg;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I am cockroach 🪳</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  :root {
+    --neon-green: #00ff41;
+    --neon-red: #ff0040;
+    --neon-cyan: #00f5ff;
+    --neon-purple: #bf00ff;
+    --bg: #000;
+  }
 
-        body, html {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #030303;
-            font-family: 'Impact', 'Arial Black', sans-serif;
-            cursor: crosshair;
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Ambient Sci-Fi Room Background */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000000 80%);
-            opacity: 0.7;
-            z-index: -2;
-        }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    cursor: crosshair;
+  }
 
-        /* Glassmorphism / Atmospheric Fog Overlay */
-        body::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, rgba(0, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.8) 100%);
-            backdrop-filter: blur(2px);
-            z-index: 2;
-            pointer-events: none;
-        }
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
 
-        #fxCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
+  #particle-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
 
-        #scene {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1200px;
-            z-index: 5;
-        }
+  #roach-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
 
-        .text-wrapper {
-            transform-style: preserve-3d;
-            animation: float 6s ease-in-out infinite, breath 4s ease-in-out infinite;
-            transform: rotateX(var(--mouse-y)) rotateY(var(--mouse-x));
-            transition: transform 0.1s ease-out;
-        }
+  .scene {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 800px;
+    transform-style: preserve-3d;
+  }
 
-        h1 {
-            font-size: clamp(3rem, 8vw, 8rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            text-align: center;
-            letter-spacing: 0.05em;
-            position: relative;
-            white-space: nowrap;
-            
-            /* Metallic Neon Texture */
-            background: linear-gradient(180deg, #ffffff 0%, #00ffff 40%, #003333 80%, #000000 100%);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            
-            /* Dynamic Depth and Glow */
-            filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.6)) 
-                    drop-shadow(0 0 30px rgba(0, 255, 255, 0.4)) 
-                    drop-shadow(0 15px 10px rgba(0,0,0,0.9));
-            
-            transform: translateZ(50px);
-        }
+  .text-container {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+  }
 
-        /* Glitch Effects */
-        h1::before, h1::after {
-            content: "I am cockroach \1F9B3"; /* Unicode for 🪳 */
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(180deg, #ffffff 0%, #00ffff 40%, #003333 80%);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            opacity: 0.8;
-            pointer-events: none;
-        }
+  .main-text {
+    font-family: 'Orbitron', 'Courier New', monospace;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 7vw, 7rem);
+    text-align: center;
+    letter-spacing: 0.05em;
+    color: #fff;
+    position: relative;
+    z-index: 2;
+    text-shadow:
+      0 0 10px var(--neon-green),
+      0 0 20px var(--neon-green),
+      0 0 40px var(--neon-green),
+      0 0 80px var(--neon-green),
+      0 0 120px #00ff4188;
+    animation: breathe 3s ease-in-out infinite, floatY 4s ease-in-out infinite, rgbCycle 6s linear infinite;
+    filter: drop-shadow(0 0 30px var(--neon-green));
+    user-select: none;
+    -webkit-text-stroke: 1px rgba(0,255,65,0.3);
+  }
 
-        h1::before {
-            left: 3px;
-            text-shadow: -2px 0 red;
-            animation: glitch-anim-1 2s infinite linear alternate-reverse;
-            z-index: -1;
-        }
+  .main-text::before {
+    content: 'I am cockroach 🪳';
+    position: absolute; top: 0; left: 0; width: 100%;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--neon-cyan);
+    filter: blur(4px);
+    animation: glitch1 4s infinite;
+    z-index: -1;
+  }
 
-        h1::after {
-            left: -3px;
-            text-shadow: -2px 0 blue;
-            animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
-            z-index: -2;
-        }
+  .main-text::after {
+    content: 'I am cockroach 🪳';
+    position: absolute; top: 0; left: 0; width: 100%;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--neon-red);
+    filter: blur(3px);
+    animation: glitch2 4s infinite;
+    z-index: -1;
+  }
 
-        /* Hover distortion */
-        .text-wrapper:hover h1 {
-            filter: drop-shadow(0 0 25px rgba(255, 0, 50, 0.8)) 
-                    drop-shadow(0 0 50px rgba(255, 0, 50, 0.6));
-            background: linear-gradient(180deg, #ffffff 0%, #ff0033 40%, #330000 80%, #000000 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: extreme-glitch 0.2s infinite;
-        }
+  .glass-card {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%; height: 200%;
+    background: radial-gradient(ellipse at center,
+      rgba(0,255,65,0.03) 0%,
+      rgba(0,0,0,0) 70%);
+    border: 1px solid rgba(0,255,65,0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(2px);
+    z-index: 1;
+    pointer-events: none;
+    box-shadow:
+      0 0 60px rgba(0,255,65,0.05),
+      inset 0 0 60px rgba(0,255,65,0.02);
+  }
 
-        /* Keyframes */
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotateX(var(--mouse-y)) rotateY(var(--mouse-x)); }
-            50% { transform: translateY(-20px) rotateX(var(--mouse-y)) rotateY(var(--mouse-x)); }
-        }
+  .scan-line {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0,255,65,0.8) 50%,
+      transparent 100%);
+    z-index: 10;
+    animation: scanDown 6s linear infinite;
+    pointer-events: none;
+    filter: blur(1px);
+    box-shadow: 0 0 10px var(--neon-green);
+  }
 
-        @keyframes breath {
-            0%, 100% { scale: 1; filter: brightness(1); }
-            50% { scale: 1.02; filter: brightness(1.2); }
-        }
+  .vignette {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center,
+      transparent 30%,
+      rgba(0,0,0,0.7) 100%);
+    z-index: 4;
+    pointer-events: none;
+  }
 
-        @keyframes glitch-anim-1 {
-            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
-            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
-            40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
-            60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
-            80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
-            100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
-        }
+  .crt-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 5;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    animation: crtFlicker 0.15s infinite;
+  }
 
-        @keyframes glitch-anim-2 {
-            0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); }
-            20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, 1px); }
-            40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, 2px); }
-            60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, -2px); }
-            80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 1px); }
-            100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, -1px); }
-        }
+  .glitch-bar {
+    position: fixed;
+    left: 0; width: 100%; height: 2px;
+    background: var(--neon-red);
+    z-index: 6;
+    opacity: 0;
+    pointer-events: none;
+    animation: glitchBar 5s infinite;
+    box-shadow: 0 0 8px var(--neon-red);
+  }
 
-        @keyframes extreme-glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-4px, 2px) skewX(5deg); }
-            40% { transform: translate(4px, -2px) skewX(-5deg); }
-            60% { transform: translate(-2px, 4px) skewX(2deg); }
-            80% { transform: translate(2px, -4px) skewX(-2deg); }
-            100% { transform: translate(0); }
-        }
-        
-        /* CRT scanline overlay */
-        .scanlines {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
-            background-size: 100% 4px;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0.6;
-        }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
 
-    </style>
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0px) rotateX(0deg); }
+    25% { transform: translateY(-12px) rotateX(2deg); }
+    75% { transform: translateY(8px) rotateX(-1deg); }
+  }
+
+  @keyframes rgbCycle {
+    0%   { text-shadow: 0 0 10px #00ff41, 0 0 30px #00ff41, 0 0 70px #00ff41, 0 0 120px #00ff4166; filter: drop-shadow(0 0 20px #00ff41); }
+    20%  { text-shadow: 0 0 10px #00f5ff, 0 0 30px #00f5ff, 0 0 70px #00f5ff, 0 0 120px #00f5ff66; filter: drop-shadow(0 0 20px #00f5ff); }
+    40%  { text-shadow: 0 0 10px #bf00ff, 0 0 30px #bf00ff, 0 0 70px #bf00ff, 0 0 120px #bf00ff66; filter: drop-shadow(0 0 20px #bf00ff); }
+    60%  { text-shadow: 0 0 10px #ff0040, 0 0 30px #ff0040, 0 0 70px #ff0040, 0 0 120px #ff004066; filter: drop-shadow(0 0 20px #ff0040); }
+    80%  { text-shadow: 0 0 10px #ffaa00, 0 0 30px #ffaa00, 0 0 70px #ffaa00, 0 0 120px #ffaa0066; filter: drop-shadow(0 0 20px #ffaa00); }
+    100% { text-shadow: 0 0 10px #00ff41, 0 0 30px #00ff41, 0 0 70px #00ff41, 0 0 120px #00ff4166; filter: drop-shadow(0 0 20px #00ff41); }
+  }
+
+  @keyframes glitch1 {
+    0%, 90%, 100% { transform: translate(0,0); opacity: 0.5; }
+    91% { transform: translate(-4px, 2px); opacity: 0.8; }
+    92% { transform: translate(4px, -2px); opacity: 0.3; }
+    93% { transform: translate(-2px, 1px); opacity: 0.7; }
+    94% { transform: translate(0, 0); opacity: 0; }
+  }
+
+  @keyframes glitch2 {
+    0%, 85%, 100% { transform: translate(0,0); opacity: 0.5; }
+    86% { transform: translate(5px, -1px); opacity: 0.6; }
+    87% { transform: translate(-3px, 3px); opacity: 0.4; }
+    88% { transform: translate(2px, -2px); opacity: 0.8; }
+    89% { transform: translate(0, 0); opacity: 0; }
+  }
+
+  @keyframes scanDown {
+    0% { top: -3px; opacity: 1; }
+    80% { opacity: 0.6; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  @keyframes crtFlicker {
+    0%, 100% { opacity: 1; }
+    98% { opacity: 0.97; }
+    99% { opacity: 0.93; }
+  }
+
+  @keyframes glitchBar {
+    0%, 100% { opacity: 0; top: 0; }
+    10% { opacity: 0; }
+    10.5% { opacity: 1; top: 30%; }
+    11% { opacity: 0; }
+    40% { opacity: 0; }
+    40.5% { opacity: 0.8; top: 70%; height: 5px; }
+    41% { opacity: 0; }
+    70% { opacity: 0; }
+    70.5% { opacity: 0.6; top: 50%; height: 1px; }
+    71% { opacity: 0; }
+  }
+
+  #loading-screen {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #000;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    transition: opacity 1s ease;
+  }
+
+  #loading-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-text {
+    font-family: 'Orbitron', monospace;
+    color: var(--neon-green);
+    font-size: 1.2rem;
+    letter-spacing: 0.3em;
+    animation: loadingPulse 0.8s ease-in-out infinite;
+  }
+
+  .loading-bar-outer {
+    width: 300px; height: 3px;
+    background: rgba(0,255,65,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loading-bar-inner {
+    height: 100%;
+    background: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
+    animation: loadBar 1.8s ease-in-out forwards;
+  }
+
+  @keyframes loadingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes loadBar {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+</style>
 </head>
 <body>
-    <div class="scanlines"></div>
-    <canvas id="fxCanvas"></canvas>
-    
-    <div id="scene">
-        <div class="text-wrapper" id="textWrap">
-            <h1>I am cockroach 🪳</h1>
-        </div>
-    </div>
 
-    <script>
-        // --- 1. Parallax & 3D Interaction ---
-        const scene = document.getElementById('scene');
-        const textWrap = document.getElementById('textWrap');
+<div id="loading-screen">
+  <div class="loading-text">INITIALIZING COCKROACH PROTOCOL...</div>
+  <div class="loading-bar-outer"><div class="loading-bar-inner"></div></div>
+</div>
 
-        document.addEventListener('mousemove', (e) => {
-            // Calculate rotation based on mouse position
-            const x = (window.innerWidth / 2 - e.pageX) / 25;
-            const y = (window.innerHeight / 2 - e.pageY) / 25;
-            
-            // Apply to CSS variables
-            document.documentElement.style.setProperty('--mouse-x', `${-x}deg`);
-            document.documentElement.style.setProperty('--mouse-y', `${y}deg`);
-        });
+<canvas id="bg-canvas"></canvas>
+<canvas id="particle-canvas"></canvas>
+<canvas id="roach-canvas"></canvas>
 
-        // --- 2. Canvas WebGL/2D Effects (Particles & Cockroaches) ---
-        const canvas = document.getElementById('fxCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        let width, height;
-        let particles = [];
-        let roaches = [];
+<div class="scan-line"></div>
+<div class="glitch-bar"></div>
+<div class="vignette"></div>
+<div class="crt-overlay"></div>
 
-        function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+<div class="scene" id="scene">
+  <div class="text-container" id="textContainer">
+    <div class="glass-card"></div>
+    <div class="main-text" id="mainText">I am cockroach 🪳</div>
+  </div>
+</div>
 
-        // Dust Particle Class
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 2 + 0.1;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5 - 0.2; // Slowly float up
-                this.life = Math.random();
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life += 0.01;
-                
-                if (this.y < 0) this.y = height;
-                if (this.x < 0) this.x = width;
-                if (this.x > width) this.x = 0;
-            }
-            draw() {
-                const alpha = (Math.sin(this.life) * 0.5 + 0.5) * 0.5;
-                ctx.fillStyle = `rgba(150, 255, 255, ${alpha})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+<script>
+// ── Audio Engine ──────────────────────────────────────────────────────────────
+let audioCtx = null;
+let masterGain;
 
-        // Realistic Cockroach Class
-        class Cockroach {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.angle = Math.random() * Math.PI * 2;
-                this.targetX = this.x;
-                this.targetY = this.y;
-                this.speed = 0;
-                this.baseSpeed = Math.random() * 4 + 3;
-                this.state = 'idle'; // idle or running
-                this.timer = Math.random() * 100;
-                this.legTime = 0;
-                this.size = Math.random() * 0.5 + 0.8;
-            }
-            
-            update() {
-                this.timer--;
-                
-                if (this.timer <= 0) {
-                    if (this.state === 'idle') {
-                        this.state = 'running';
-                        this.timer = Math.random() * 60 + 30; // run duration
-                        this.targetX = this.x + (Math.random() - 0.5) * 400;
-                        this.targetY = this.y + (Math.random() - 0.5) * 400;
-                        
-                        // Play scurry sound occasionally
-                        if (Math.random() > 0.6 && audioCtx) playScurry();
-                        
-                    } else {
-                        this.state = 'idle';
-                        this.timer = Math.random() * 120 + 60; // idle duration
-                    }
-                }
+function initAudio() {
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.3;
+    masterGain.connect(audioCtx.destination);
+    playIntroThud();
+    startAmbient();
+    scheduleRoachSounds();
+  } catch(e) {}
+}
 
-                if (this.state === 'running') {
-                    const dx = this.targetX - this.x;
-                    const dy = this.targetY - this.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist > 5) {
-                        const targetAngle = Math.atan2(dy, dx);
-                        // Smooth rotation
-                        let adiff = targetAngle - this.angle;
-                        // Normalize angle
-                        while (adiff > Math.PI) adiff -= Math.PI * 2;
-                        while (adiff < -Math.PI) adiff += Math.PI * 2;
-                        
-                        this.angle += adiff * 0.1;
-                        this.speed = this.baseSpeed;
-                        this.legTime += 0.5;
-                    } else {
-                        this.state = 'idle';
-                        this.timer = Math.random() * 100;
-                    }
-                } else {
-                    this.speed *= 0.8; // friction
-                }
+function playIntroThud() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const dist = audioCtx.createWaveShaper();
 
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle) * this.speed;
+  const curve = new Float32Array(256);
+  for (let i = 0; i < 256; i++) {
+    const x = (i * 2) / 256 - 1;
+    curve[i] = (Math.PI + 400) * x / (Math.PI + 400 * Math.abs(x));
+  }
+  dist.curve = curve;
 
-                // Screen wrap
-                if (this.x < -50) this.x = width + 50;
-                if (this.x > width + 50) this.x = -50;
-                if (this.y < -50) this.y = height + 50;
-                if (this.y > height + 50) this.y = -50;
-            }
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 1.5);
 
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                ctx.scale(this.size, this.size);
+  gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2);
 
-                // Body glow/shadow
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+  osc.connect(dist);
+  dist.connect(gain);
+  gain.connect(masterGain);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 2);
+}
 
-                // Antennae
-                ctx.strokeStyle = '#1a0d00';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(10, -2);
-                ctx.quadraticCurveTo(25, -10, 30, -15 + Math.sin(this.legTime)*2);
-                ctx.moveTo(10, 2);
-                ctx.quadraticCurveTo(25, 10, 30, 15 - Math.sin(this.legTime)*2);
-                ctx.stroke();
+function startAmbient() {
+  if (!audioCtx) return;
+  function makeAmbientLayer(freq, detune, vol) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
 
-                // Legs (6 legs, animated when running)
-                ctx.lineWidth = 1.5;
-                for (let i = 0; i < 3; i++) {
-                    const legOffset = (i - 1) * 6;
-                    const swing = Math.sin(this.legTime + i * Math.PI) * 4;
-                    
-                    // Left leg
-                    ctx.beginPath();
-                    ctx.moveTo(legOffset, -4);
-                    ctx.lineTo(legOffset - swing, -12);
-                    ctx.lineTo(legOffset - swing - 4, -16);
-                    ctx.stroke();
-                    
-                    // Right leg
-                    ctx.beginPath();
-                    ctx.moveTo(legOffset, 4);
-                    ctx.lineTo(legOffset + swing, 12);
-                    ctx.lineTo(legOffset + swing - 4, 16);
-                    ctx.stroke();
-                }
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.detune.value = detune;
+    gain.gain.value = vol;
 
-                // Main body
-                ctx.fillStyle = '#26140b';
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 12, 6, 0, 0, Math.PI * 2);
-                ctx.fill();
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
 
-                // Head/Thorax shield
-                ctx.fillStyle = '#3a2012';
-                ctx.beginPath();
-                ctx.ellipse(8, 0, 4, 5, 0, 0, Math.PI * 2);
-                ctx.fill();
+    function wobble() {
+      osc.detune.linearRampToValueAtTime(
+        detune + (Math.random() - 0.5) * 20,
+        audioCtx.currentTime + 2 + Math.random() * 3
+      );
+      setTimeout(wobble, 2000 + Math.random() * 3000);
+    }
+    wobble();
+  }
+  makeAmbientLayer(40, 0, 0.15);
+  makeAmbientLayer(60, -5, 0.08);
+  makeAmbientLayer(120, 10, 0.04);
+}
 
-                ctx.restore();
-            }
-        }
+function playCrawlSound() {
+  if (!audioCtx) return;
+  const bufSize = audioCtx.sampleRate * 0.3;
+  const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 2) * 0.3;
+  }
+  const src = audioCtx.createBufferSource();
+  const filter = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+  filter.type = 'bandpass';
+  filter.frequency.value = 800 + Math.random() * 2000;
+  filter.Q.value = 5;
+  gain.gain.value = 0.4;
+  src.buffer = buffer;
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+  src.start();
+}
 
-        for (let i = 0; i < 150; i++) particles.push(new Particle());
-        for (let i = 0; i < 12; i++) roaches.push(new Cockroach());
+function scheduleRoachSounds() {
+  function next() {
+    setTimeout(() => {
+      playCrawlSound();
+      next();
+    }, 2000 + Math.random() * 6000);
+  }
+  next();
+}
 
-        function animate() {
-            // Draw cinematic background fog effect
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-            ctx.fillRect(0, 0, width, height);
+function playHoverDistort() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(200 + Math.random() * 300, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.15);
+}
 
-            particles.forEach(p => { p.update(); p.draw(); });
-            roaches.forEach(r => { r.update(); r.draw(); });
+// ── Background Canvas (animated rooms + gradients) ────────────────────────────
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let bgTime = 0;
 
-            requestAnimationFrame(animate);
-        }
-        animate();
+function resizeBg() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+resizeBg();
 
-        // --- 3. Synthesized Web Audio API Sound Effects ---
-        let audioCtx = null;
-        let initialized = false;
-        let droneOsc, droneGain, filterNode, distortionNode;
+function drawBg() {
+  const W = bgCanvas.width, H = bgCanvas.height;
+  bgTime += 0.005;
 
-        // Create random noise buffer for insects
-        function createNoiseBuffer() {
-            const bufferSize = audioCtx.sampleRate * 2; // 2 seconds of noise
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const output = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                output[i] = Math.random() * 2 - 1;
-            }
-            return buffer;
-        }
+  // Dark base
+  bgCtx.fillStyle = '#000';
+  bgCtx.fillRect(0, 0, W, H);
 
-        function initAudio() {
-            if (initialized) return;
-            initialized = true;
-            
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
+  // Animated gradient nebula
+  const cx = W / 2, cy = H / 2;
+  const r1 = Math.sin(bgTime * 0.7) * 0.5 + 0.5;
+  const r2 = Math.cos(bgTime * 0.5) * 0.5 + 0.5;
 
-            // 1. Cinematic Bass Drop
-            const bassOsc = audioCtx.createOscillator();
-            const bassGain = audioCtx.createGain();
-            bassOsc.type = 'sine';
-            bassOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            bassOsc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 2);
-            bassGain.gain.setValueAtTime(1, audioCtx.currentTime);
-            bassGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
-            
-            bassOsc.connect(bassGain);
-            bassGain.connect(audioCtx.destination);
-            bassOsc.start();
-            bassOsc.stop(audioCtx.currentTime + 3);
+  const grad1 = bgCtx.createRadialGradient(cx + Math.sin(bgTime) * 100, cy + Math.cos(bgTime) * 60, 10, cx, cy, W * 0.8);
+  grad1.addColorStop(0, `rgba(0,${Math.floor(80 + r1 * 60)},${Math.floor(20 + r1 * 40)},0.15)`);
+  grad1.addColorStop(0.4, `rgba(${Math.floor(r2 * 40)},0,${Math.floor(r2 * 60)},0.08)`);
+  grad1.addColorStop(1, 'rgba(0,0,0,0)');
+  bgCtx.fillStyle = grad1;
+  bgCtx.fillRect(0, 0, W, H);
 
-            // 2. Continuous Creepy Drone
-            droneOsc = audioCtx.createOscillator();
-            droneOsc.type = 'sawtooth';
-            droneOsc.frequency.setValueAtTime(40, audioCtx.currentTime); // Deep hum
+  // Sci-fi floor grid
+  bgCtx.save();
+  bgCtx.globalAlpha = 0.06 + Math.sin(bgTime * 2) * 0.02;
+  bgCtx.strokeStyle = '#00ff41';
+  bgCtx.lineWidth = 0.5;
 
-            filterNode = audioCtx.createBiquadFilter();
-            filterNode.type = 'lowpass';
-            filterNode.frequency.setValueAtTime(200, audioCtx.currentTime);
+  const gridOff = (bgTime * 20) % 60;
+  bgCtx.beginPath();
+  for (let x = 0; x < W; x += 60) {
+    bgCtx.moveTo(x, 0); bgCtx.lineTo(x, H);
+  }
+  for (let y = -gridOff; y < H; y += 60) {
+    bgCtx.moveTo(0, y); bgCtx.lineTo(W, y);
+  }
+  bgCtx.stroke();
+  bgCtx.restore();
 
-            droneGain = audioCtx.createGain();
-            droneGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  // Corner ambient lights
+  const corners = [[0,0],[W,0],[0,H],[W,H]];
+  corners.forEach(([cx2, cy2], i) => {
+    const pulse = Math.sin(bgTime * 1.5 + i) * 0.5 + 0.5;
+    const cg = bgCtx.createRadialGradient(cx2, cy2, 0, cx2, cy2, W * 0.4);
+    cg.addColorStop(0, `rgba(0,${Math.floor(20 + pulse * 30)},0,${0.12 + pulse * 0.06})`);
+    cg.addColorStop(1, 'rgba(0,0,0,0)');
+    bgCtx.fillStyle = cg;
+    bgCtx.fillRect(0, 0, W, H);
+  });
 
-            // Distortion for cyber-horror vibe
-            distortionNode = audioCtx.createWaveShaper();
-            distortionNode.curve = makeDistortionCurve(50);
-            distortionNode.oversample = '4x';
+  // Vertical scan light
+  const scanX = (bgTime * 40) % (W + 200) - 100;
+  const scanGrad = bgCtx.createLinearGradient(scanX - 60, 0, scanX + 60, 0);
+  scanGrad.addColorStop(0, 'rgba(0,255,65,0)');
+  scanGrad.addColorStop(0.5, `rgba(0,255,65,0.04)`);
+  scanGrad.addColorStop(1, 'rgba(0,255,65,0)');
+  bgCtx.fillStyle = scanGrad;
+  bgCtx.fillRect(0, 0, W, H);
 
-            droneOsc.connect(distortionNode);
-            distortionNode.connect(filterNode);
-            filterNode.connect(droneGain);
-            droneGain.connect(audioCtx.destination);
-            
-            droneOsc.start();
+  requestAnimationFrame(drawBg);
+}
+drawBg();
 
-            // Drone modulation loop
-            setInterval(() => {
-                const freq = 100 + Math.random() * 200;
-                filterNode.frequency.setTargetAtTime(freq, audioCtx.currentTime, 1);
-            }, 2000);
-        }
+// ── Particle Canvas (dust / smoke) ────────────────────────────────────────────
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
 
-        // Distortion curve generator
-        function makeDistortionCurve(amount) {
-            const k = typeof amount === 'number' ? amount : 50,
-                  n_samples = 44100,
-                  curve = new Float32Array(n_samples),
-                  deg = Math.PI / 180;
-            for (let i = 0; i < n_samples; ++i ) {
-                const x = i * 2 / n_samples - 1;
-                curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
-            }
-            return curve;
-        }
+function resizeP() {
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+resizeP();
 
-        // Scurry Sound Effect (Insect crawling)
-        function playScurry() {
-            if(!audioCtx) return;
-            const noiseSrc = audioCtx.createBufferSource();
-            noiseSrc.buffer = createNoiseBuffer();
-            
-            const bpf = audioCtx.createBiquadFilter();
-            bpf.type = 'bandpass';
-            bpf.frequency.value = 4000 + Math.random() * 2000;
-            
-            const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+const particles = [];
+for (let i = 0; i < 180; i++) {
+  particles.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: -Math.random() * 0.5 - 0.1,
+    size: Math.random() * 2.5 + 0.3,
+    alpha: Math.random() * 0.5 + 0.1,
+    hue: Math.random() < 0.7 ? 120 : (Math.random() < 0.5 ? 180 : 300),
+    life: Math.random(),
+    decay: Math.random() * 0.002 + 0.001,
+  });
+}
 
-            // Fast LFO to chop the noise (sounds like little legs)
-            const lfo = audioCtx.createOscillator();
-            lfo.type = 'square';
-            lfo.frequency.value = 20 + Math.random() * 10;
-            const lfoGain = audioCtx.createGain();
-            lfoGain.gain.value = 1;
-            
-            lfo.connect(gain.gain);
-            noiseSrc.connect(bpf);
-            bpf.connect(gain);
-            gain.connect(audioCtx.destination);
+let pTime = 0;
+function drawParticles() {
+  pTime += 0.01;
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
 
-            noiseSrc.start();
-            lfo.start();
-            noiseSrc.stop(audioCtx.currentTime + 0.4);
-            lfo.stop(audioCtx.currentTime + 0.4);
-        }
+  particles.forEach(p => {
+    p.x += p.vx + Math.sin(pTime + p.y * 0.01) * 0.3;
+    p.y += p.vy;
+    p.life -= p.decay;
 
-        // Hover Effect - Increase distortion and pitch
-        textWrap.addEventListener('mouseenter', () => {
-            if(audioCtx && droneOsc) {
-                droneOsc.frequency.setTargetAtTime(60, audioCtx.currentTime, 0.1);
-                filterNode.frequency.setTargetAtTime(800, audioCtx.currentTime, 0.1);
-                droneGain.gain.setTargetAtTime(0.6, audioCtx.currentTime, 0.1);
-            }
-        });
+    if (p.life <= 0 || p.y < 0) {
+      p.x = Math.random() * pCanvas.width;
+      p.y = pCanvas.height + 10;
+      p.life = 0.8 + Math.random() * 0.4;
+      p.vx = (Math.random() - 0.5) * 0.4;
+      p.vy = -Math.random() * 0.5 - 0.1;
+    }
 
-        textWrap.addEventListener('mouseleave', () => {
-            if(audioCtx && droneOsc) {
-                droneOsc.frequency.setTargetAtTime(40, audioCtx.currentTime, 0.5);
-                filterNode.frequency.setTargetAtTime(200, audioCtx.currentTime, 0.5);
-                droneGain.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.5);
-            }
-        });
+    const fade = Math.min(p.life * 3, 1);
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    pCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${p.alpha * fade})`;
+    pCtx.fill();
 
-        // Initialize audio on any user interaction
-        ['click', 'keydown', 'mousemove', 'touchstart'].forEach(evt => {
-            document.addEventListener(evt, initAudio, { once: true });
-        });
+    // Glow
+    const grd = pCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
+    grd.addColorStop(0, `hsla(${p.hue}, 100%, 60%, ${p.alpha * 0.3 * fade})`);
+    grd.addColorStop(1, 'transparent');
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
+    pCtx.fillStyle = grd;
+    pCtx.fill();
+  });
 
-    </script>
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ── Cockroach Canvas ──────────────────────────────────────────────────────────
+const rCanvas = document.getElementById('roach-canvas');
+const rCtx = rCanvas.getContext('2d');
+
+function resizeR() {
+  rCanvas.width = window.innerWidth;
+  rCanvas.height = window.innerHeight;
+}
+resizeR();
+
+class Cockroach {
+  constructor() { this.reset(true); }
+
+  reset(init = false) {
+    const W = rCanvas.width, H = rCanvas.height;
+    const edge = Math.floor(Math.random() * 4);
+    if (edge === 0) { this.x = Math.random() * W; this.y = -30; }
+    else if (edge === 1) { this.x = W + 30; this.y = Math.random() * H; }
+    else if (edge === 2) { this.x = Math.random() * W; this.y = H + 30; }
+    else { this.x = -30; this.y = Math.random() * H; }
+
+    if (init) { this.x = Math.random() * W; this.y = Math.random() * H; }
+
+    this.targetX = Math.random() * W;
+    this.targetY = Math.random() * H;
+    this.speed = 0.8 + Math.random() * 2;
+    this.size = 18 + Math.random() * 22;
+    this.angle = Math.atan2(this.targetY - this.y, this.targetX - this.x);
+    this.legPhase = Math.random() * Math.PI * 2;
+    this.legSpeed = 0.25 + Math.random() * 0.2;
+    this.alpha = 0.5 + Math.random() * 0.5;
+    this.scurryTimer = 0;
+    this.scurryInterval = 60 + Math.random() * 120;
+    this.alive = true;
+    this.fear = false;
+  }
+
+  update() {
+    this.scurryTimer++;
+    if (this.scurryTimer > this.scurryInterval) {
+      const W = rCanvas.width, H = rCanvas.height;
+      this.targetX = Math.random() * W;
+      this.targetY = Math.random() * H;
+      this.angle = Math.atan2(this.targetY - this.y, this.targetX - this.x);
+      this.scurryTimer = 0;
+      this.scurryInterval = 60 + Math.random() * 120;
+      if (Math.random() < 0.3) this.speed = 3 + Math.random() * 3;
+    }
+
+    const dx = this.targetX - this.x, dy = this.targetY - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 5) {
+      const W = rCanvas.width, H = rCanvas.height;
+      this.targetX = Math.random() * W;
+      this.targetY = Math.random() * H;
+    }
+
+    const targetAngle = Math.atan2(dy, dx);
+    let da = targetAngle - this.angle;
+    while (da > Math.PI) da -= 2 * Math.PI;
+    while (da < -Math.PI) da += 2 * Math.PI;
+    this.angle += da * 0.08;
+
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+    this.legPhase += this.legSpeed;
+
+    const pad = 60;
+    if (this.x < -pad || this.x > rCanvas.width + pad ||
+        this.y < -pad || this.y > rCanvas.height + pad) {
+      this.reset();
+    }
+    this.speed = Math.max(0.8, this.speed * 0.99);
+  }
+
+  draw() {
+    rCtx.save();
+    rCtx.translate(this.x, this.y);
+    rCtx.rotate(this.angle + Math.PI / 2);
+    rCtx.globalAlpha = this.alpha;
+    const s = this.size;
+
+    // Shadow
+    rCtx.save();
+    rCtx.translate(3, 3);
+    rCtx.globalAlpha = this.alpha * 0.3;
+    rCtx.fillStyle = '#000';
+    this._drawBody(s);
+    rCtx.restore();
+
+    this._drawLegs(s);
+    this._drawBody(s);
+    this._drawAntennae(s);
+
+    rCtx.restore();
+  }
+
+  _drawBody(s) {
+    // Abdomen
+    rCtx.beginPath();
+    rCtx.ellipse(0, s * 0.3, s * 0.38, s * 0.55, 0, 0, Math.PI * 2);
+    const abGrad = rCtx.createRadialGradient(-s*0.1, s*0.1, 0, 0, s*0.3, s*0.5);
+    abGrad.addColorStop(0, '#4a3520');
+    abGrad.addColorStop(0.4, '#2a1e0e');
+    abGrad.addColorStop(1, '#0a0805');
+    rCtx.fillStyle = abGrad;
+    rCtx.fill();
+
+    // Stripe segments
+    for (let i = 0; i < 4; i++) {
+      rCtx.beginPath();
+      rCtx.ellipse(0, s * 0.05 + i * s * 0.17, s * 0.35 - i * 0.01, s * 0.04, 0, 0, Math.PI * 2);
+      rCtx.fillStyle = `rgba(${60 + i * 5},${40 + i * 3},${10},0.4)`;
+      rCtx.fill();
+    }
+
+    // Pronotum (head shield)
+    rCtx.beginPath();
+    rCtx.ellipse(0, -s * 0.32, s * 0.36, s * 0.28, 0, 0, Math.PI * 2);
+    const pGrad = rCtx.createRadialGradient(-s*0.08, -s*0.38, 0, 0, -s*0.32, s*0.35);
+    pGrad.addColorStop(0, '#5a4025');
+    pGrad.addColorStop(1, '#1a100a');
+    rCtx.fillStyle = pGrad;
+    rCtx.fill();
+
+    // Head
+    rCtx.beginPath();
+    rCtx.ellipse(0, -s * 0.65, s * 0.18, s * 0.16, 0, 0, Math.PI * 2);
+    rCtx.fillStyle = '#1a0e08';
+    rCtx.fill();
+
+    // Eyes
+    [-1, 1].forEach(side => {
+      rCtx.beginPath();
+      rCtx.arc(side * s * 0.1, -s * 0.68, s * 0.045, 0, Math.PI * 2);
+      rCtx.fillStyle = '#ff2200';
+      rCtx.fill();
+      rCtx.beginPath();
+      rCtx.arc(side * s * 0.1 + side * s * 0.01, -s * 0.68, s * 0.02, 0, Math.PI * 2);
+      rCtx.fillStyle = '#ff8844';
+      rCtx.fill();
+    });
+
+    // Shine
+    rCtx.beginPath();
+    rCtx.ellipse(-s * 0.08, -s * 0.38, s * 0.1, s * 0.06, -0.3, 0, Math.PI * 2);
+    rCtx.fillStyle = 'rgba(180,140,80,0.15)';
+    rCtx.fill();
+  }
+
+  _drawLegs(s) {
+    const lp = this.legPhase;
+    const legPairs = [
+      { y: -s * 0.15, spread: s * 0.42 },
+      { y: s * 0.1,   spread: s * 0.48 },
+      { y: s * 0.35,  spread: s * 0.44 },
+    ];
+    legPairs.forEach(({ y, spread }, pi) => {
+      [-1, 1].forEach(side => {
+        const swing = Math.sin(lp + pi * 1.05 + (side > 0 ? Math.PI : 0)) * s * 0.18;
+        rCtx.beginPath();
+        rCtx.moveTo(side * s * 0.3, y);
+        const mx = side * (spread * 0.6 + Math.abs(swing) * 0.5);
+        const my = y - s * 0.05 + swing * 0.3;
+        const ex = side * (spread + swing * 0.4);
+        const ey = y + s * 0.15 + swing * 0.6;
+        rCtx.quadraticCurveTo(mx, my, ex, ey);
+        rCtx.strokeStyle = 'rgba(50,35,15,0.85)';
+        rCtx.lineWidth = s * 0.035;
+        rCtx.lineCap = 'round';
+        rCtx.stroke();
+      });
+    });
+  }
+
+  _drawAntennae(s) {
+    const lp = this.legPhase;
+    [-1, 1].forEach(side => {
+      const wave = Math.sin(lp * 0.6 + side) * s * 0.2;
+      rCtx.beginPath();
+      rCtx.moveTo(side * s * 0.1, -s * 0.75);
+      rCtx.bezierCurveTo(
+        side * s * 0.25, -s * 1.0,
+        side * s * 0.5 + wave, -s * 1.3,
+        side * s * 0.6 + wave * 1.4, -s * 1.6
+      );
+      rCtx.strokeStyle = 'rgba(60,40,15,0.7)';
+      rCtx.lineWidth = s * 0.025;
+      rCtx.lineCap = 'round';
+      rCtx.stroke();
+    });
+  }
+
+  scurryAway(mx, my) {
+    const dx = this.x - mx, dy = this.y - my;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 150) {
+      this.targetX = this.x + dx / dist * 300;
+      this.targetY = this.y + dy / dist * 300;
+      this.angle = Math.atan2(dy, dx);
+      this.speed = 4 + Math.random() * 3;
+    }
+  }
+}
+
+const roaches = Array.from({ length: 12 }, () => new Cockroach());
+let rTime = 0;
+
+function drawRoaches() {
+  rTime++;
+  rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+  roaches.forEach(r => { r.update(); r.draw(); });
+  requestAnimationFrame(drawRoaches);
+}
+drawRoaches();
+
+// ── Mouse Parallax ────────────────────────────────────────────────────────────
+let mouseX = 0, mouseY = 0;
+let smoothX = 0, smoothY = 0;
+const textContainer = document.getElementById('textContainer');
+const scene = document.getElementById('scene');
+
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  roaches.forEach(r => r.scurryAway(e.clientX, e.clientY));
+});
+
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  mouseX = (t.clientX / window.innerWidth - 0.5) * 2;
+  mouseY = (t.clientY / window.innerHeight - 0.5) * 2;
+});
+
+function updateParallax() {
+  smoothX += (mouseX - smoothX) * 0.05;
+  smoothY += (mouseY - smoothY) * 0.05;
+  textContainer.style.transform =
+    `rotateY(${smoothX * 12}deg) rotateX(${-smoothY * 8}deg) translateZ(20px)`;
+  requestAnimationFrame(updateParallax);
+}
+updateParallax();
+
+// ── Hover sound ───────────────────────────────────────────────────────────────
+document.getElementById('mainText').addEventListener('mouseenter', () => {
+  playHoverDistort();
+});
+
+// ── Resize ────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  resizeBg(); resizeP(); resizeR();
+});
+
+// ── Init on first interaction ─────────────────────────────────────────────────
+let started = false;
+function start() {
+  if (started) return;
+  started = true;
+  initAudio();
+  setTimeout(() => {
+    const ls = document.getElementById('loading-screen');
+    ls.classList.add('fade-out');
+    setTimeout(() => ls.style.display = 'none', 1200);
+  }, 1900);
+}
+
+document.addEventListener('click', start);
+document.addEventListener('touchstart', start);
+document.addEventListener('keydown', start);
+setTimeout(start, 2500); // auto-start if no interaction
+</script>
 </body>
 </html>
