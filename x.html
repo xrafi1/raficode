@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenZ4India - Youth Movement</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-cream: #fcf9f2;
+    --text-dark: #111111;
+    --brand-orange: #ff5a00;
+    --brand-green: #009a44;
+    --accent-lime: #c5ea5d;
+    --dark-bg: #111111;
+    --dark-card: #1a1a1a;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .impact-text {
+    font-family: 'Anton', sans-serif;
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: 0.5px;
+  }
+
+  /* UTILITY CLASSES */
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  
+  .section-padding {
+    padding: 60px 0;
+  }
+
+  .pill-badge {
+    display: inline-block;
+    background: var(--accent-lime);
+    color: var(--text-dark);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: 1.5px solid var(--text-dark);
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: 2px solid var(--text-dark);
+    box-shadow: 4px 4px 0px var(--text-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+
+  .btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--text-dark);
+  }
+
+  .btn-orange { background: var(--brand-orange); color: white; }
+  .btn-light { background: var(--bg-cream); color: var(--text-dark); }
+  .btn-dark { background: var(--text-dark); color: white; border-color: white; box-shadow: 4px 4px 0px rgba(255,255,255,0.2); }
+  .btn-dark:hover { box-shadow: 2px 2px 0px rgba(255,255,255,0.2); }
+
+  /* HEADER */
+  header {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .logo {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+  }
+  .logo span { color: var(--brand-orange); }
+
+  /* HERO SECTION */
+  .hero {
+    padding: 60px 0 80px;
+    background: linear-gradient(180deg, #fcf9f2 0%, #eef5de 100%);
+  }
+  .hero h1 {
+    font-size: clamp(60px, 12vw, 120px);
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .hero h1 .c-orange { color: var(--brand-orange); }
+  .hero h1 .c-green { color: var(--brand-green); }
+  
+  .hero p {
+    font-size: clamp(16px, 4vw, 20px);
+    color: #444;
+    max-width: 600px;
+    margin-bottom: 40px;
+  }
+  
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* TICKER */
+  .ticker-wrap {
+    background: var(--dark-bg);
+    overflow: hidden;
+    padding: 12px 0;
+    border-top: 2px solid var(--accent-lime);
+    border-bottom: 2px solid var(--accent-lime);
+  }
+  .ticker {
+    display: flex;
+    white-space: nowrap;
+    animation: ticker 15s linear infinite;
+  }
+  .ticker-item {
+    color: var(--accent-lime);
+    font-family: 'Anton', sans-serif;
+    font-size: 20px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* DARK SECTION (WHO WE ARE) */
+  .dark-section {
+    background: var(--dark-bg);
+    color: white;
+  }
+  .section-label {
+    color: var(--accent-lime);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 30px;
+    height: 2px;
+    background: var(--accent-lime);
+  }
+  .dark-section h2 {
+    font-size: clamp(40px, 8vw, 70px);
+    margin-bottom: 30px;
+  }
+  .dark-section .lead-text {
+    font-size: 18px;
+    color: #ccc;
+    margin-bottom: 40px;
+    max-width: 800px;
+  }
+  .dark-section .highlight {
+    color: var(--accent-lime);
+    font-weight: 600;
+  }
+
+  .dark-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 40px;
+  }
+  .dark-card {
+    background: var(--dark-card);
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .dark-card .icon {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  .dark-card h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+    text-transform: none;
+  }
+  .dark-card p {
+    font-size: 14px;
+    color: #999;
+  }
+
+  /* PILLARS SECTION */
+  .pillars {
+    background: var(--bg-cream);
+  }
+  .pillars-header {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .pillars h2 {
+    font-size: clamp(40px, 8vw, 70px);
+  }
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .pillar-card {
+    background: white;
+    border: 2px solid var(--text-dark);
+    border-radius: 16px;
+    padding: 30px 24px;
+    position: relative;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.9);
+  }
+  .pillar-number {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: 'Anton', sans-serif;
+    font-size: 40px;
+    color: rgba(0,0,0,0.05);
+    line-height: 1;
+  }
+  .pillar-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--brand-orange);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    border: 2px solid var(--text-dark);
+  }
+  /* Alternate icon colors */
+  .pillar-card:nth-child(2n) .pillar-icon { background: var(--accent-lime); }
+  .pillar-card:nth-child(3n) .pillar-icon { background: #3b82f6; }
+  .pillar-card:nth-child(4n) .pillar-icon { background: #ec4899; }
+  .pillar-card:nth-child(5n) .pillar-icon { background: var(--brand-green); }
+
+  .pillar-card h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .pillar-card p {
+    font-size: 14px;
+    color: #555;
+  }
+
+  /* MOVEMENT BANNER */
+  .movement {
+    background: var(--brand-orange);
+    color: white;
+    text-align: left;
+  }
+  .movement h2 {
+    font-size: clamp(50px, 10vw, 90px);
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .movement p {
+    font-size: 16px;
+    margin-bottom: 32px;
+    max-width: 600px;
+  }
+
+  /* TESTIMONIALS */
+  .testimonials {
+    background: var(--bg-cream);
+  }
+  .test-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .test-card {
+    background: white;
+    border: 2px solid var(--text-dark);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 4px 4px 0px var(--text-dark);
+  }
+  .test-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--text-dark);
+    margin-bottom: 16px;
+    background: #ffd700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .test-card p {
+    font-size: 15px;
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+  .test-author {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .test-loc {
+    font-size: 12px;
+    color: #666;
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    background: var(--brand-green);
+    color: white;
+    text-align: center;
+    padding: 80px 24px;
+  }
+  .cta-section h2 {
+    font-size: clamp(40px, 8vw, 70px);
+    margin-bottom: 16px;
+  }
+  .cta-section p {
+    font-size: 16px;
+    margin-bottom: 40px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .form-group {
+    background: white;
+    padding: 8px;
+    border-radius: 50px;
+    display: flex;
+    max-width: 400px;
+    margin: 0 auto;
+    border: 2px solid var(--text-dark);
+    box-shadow: 4px 4px 0px var(--text-dark);
+  }
+  .form-group input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  .form-group button {
+    background: var(--text-dark);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark-bg);
+    color: #aaa;
+    padding: 60px 24px 30px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 40px;
+  }
+  .footer-brand h3 {
+    color: white;
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .footer-brand span { color: var(--brand-orange); }
+  .footer-links h4 {
+    color: white;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .footer-links ul {
+    list-style: none;
+  }
+  .footer-links ul li {
+    margin-bottom: 10px;
+  }
+  .footer-links ul li a {
+    color: #aaa;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .footer-links ul li a:hover {
+    color: var(--accent-lime);
+  }
+  .footer-bottom {
+    text-align: center;
+    border-top: 1px solid #333;
+    padding-top: 20px;
+    font-size: 12px;
+  }
+
+  /* RESPONSIVE DESKTOP OVERRIDES */
+  @media (min-width: 768px) {
+    .pillars-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .dark-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .pillars-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .test-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .footer-grid {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .dark-cards-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .pillars-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .test-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">GENZ4<span>INDIA</span></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="pill-badge">✦ INDIA'S YOUTH MOVEMENT</div>
+      <h1>
+        <span class="c-orange">BUILD.</span>
+        <span class="c-green">LEAD.</span>
+        <span>TRANSFORM.</span>
+      </h1>
+      <p>GenZ4India is a nationwide movement of young Indians who believe in a stronger, smarter, and more inclusive Bharat — built by us, for all of us.</p>
+      
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-orange">Join the Movement →</a>
+        <a href="#" class="btn btn-light">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <div class="ticker-item">✦ YOUTH POWER ✦ जय हिन्द</div>
+      <div class="ticker-item">✦ YOUTH POWER ✦ जय हिन्द</div>
+      <div class="ticker-item">✦ YOUTH POWER ✦ जय हिन्द</div>
+      <div class="ticker-item">✦ YOUTH POWER ✦ जय हिन्द</div>
+      <div class="ticker-item">✦ YOUTH POWER ✦ जय हिन्द</div>
+      <div class="ticker-item">✦ YOUTH POWER ✦ जय हिन्द</div>
+    </div>
+  </div>
+
+  <section class="dark-section section-padding">
+    <div class="container">
+      <div class="section-label" style="color: var(--accent-lime);">Who We Are</div>
+      <h2>INDIA'S GEN Z<br>HAS ARRIVED.</h2>
+      <p class="lead-text">
+        We are <span class="highlight">650 million young Indians</span> under 35 — the largest youth population on the planet. We are creators, engineers, activists, artists, and dreamers.
+        <br><br>
+        GenZ4India channels this energy into <span class="highlight">real action:</span> policy advocacy, community projects, digital literacy, climate action, and entrepreneurship — across every state, city, and village.
+        <br><br>
+        We don't just inherit India. <span class="highlight">We are building it.</span>
+      </p>
+
+      <div class="dark-cards-grid">
+        <div class="dark-card">
+          <div class="icon">🏛️</div>
+          <h3>Policy Voice</h3>
+          <p>Representing youth in governance and policy discussions at every level.</p>
+        </div>
+        <div class="dark-card">
+          <div class="icon">💡</div>
+          <h3>Innovation</h3>
+          <p>Nurturing startups and problem-solvers across Tier 1, 2 & 3 cities.</p>
+        </div>
+        <div class="dark-card">
+          <div class="icon">🌿</div>
+          <h3>Planet First</h3>
+          <p>Climate action campaigns and sustainable living initiatives nationwide.</p>
+        </div>
+        <div class="dark-card">
+          <div class="icon">📚</div>
+          <h3>Education</h3>
+          <p>Bridging skill gaps and enabling access to modern digital education.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pillars section-padding">
+    <div class="container">
+      <div class="section-label" style="color: var(--brand-orange);">What We Stand For</div>
+      <div class="pillars-header">
+        <h2>OUR SIX<br>PILLARS</h2>
+        <a href="#" class="btn btn-orange">Our ideology →</a>
+      </div>
+
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <div class="pillar-number">01</div>
+          <div class="pillar-icon">🎯</div>
+          <h3>Nation First</h3>
+          <p>Putting national interest above all. A stronger, united and aspirational Bharat — where duty drives rights.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-number">02</div>
+          <div class="pillar-icon">💻</div>
+          <h3>Digital Empowerment</h3>
+          <p>Ensuring every young Indian has access to technology, digital skills, and the internet economy.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-number">03</div>
+          <div class="pillar-icon">🤝</div>
+          <h3>Social Justice</h3>
+          <p>Fighting inequality — on gender, caste, class and opportunity — through grassroots action and policy change.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-number">04</div>
+          <div class="pillar-icon">🌱</div>
+          <h3>Climate Action</h3>
+          <p>Zero tolerance for climate crisis, while fighting back with local solutions and national pressure.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-number">05</div>
+          <div class="pillar-icon">🏘️</div>
+          <h3>Community Building</h3>
+          <p>Creating spaces where India's youth can connect, collaborate and co-create offline and online.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-number">06</div>
+          <div class="pillar-icon">🎨</div>
+          <h3>Arts & Culture</h3>
+          <p>Celebrating India's diversity through music, art, literature, and youth-led cultural expression.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="movement section-padding">
+    <div class="container">
+      <div class="section-label" style="color: white; border-color: white;">The Call</div>
+      <h2>THIS IS NOT<br>A MOMENT.<br>IT'S A MOVEMENT.</h2>
+      <p>History doesn't wait. The India of 2047 — a century after independence — will be shaped by decisions made right now, by us. Whether it's a village in Odisha or a startup in Bengaluru, GenZ4India is there. We show up. We speak up. We build up.</p>
+      <a href="#" class="btn btn-dark">Be Part of History →</a>
+    </div>
+  </section>
+
+  <section class="testimonials section-padding">
+    <div class="container">
+      <div class="section-label" style="color: var(--brand-orange);">Voices</div>
+      <h2>HEARD ACROSS<br>BHARAT</h2>
+      
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-avatar" style="background: #ffb7b2;">👩🏽</div>
+          <p>"GenZ4India gave me a platform to turn my local clean-up campaign into a district-level movement. It's real work."</p>
+          <div class="test-author">Ananya Sharma</div>
+          <div class="test-loc">📍 Lucknow, UP</div>
+        </div>
+        <div class="test-card">
+          <div class="test-avatar" style="background: #b2e2f2;">👨🏽</div>
+          <p>"This community is unlike anything else — people from massive backgrounds just working together."</p>
+          <div class="test-author">R. Vankesh</div>
+          <div class="test-loc">📍 Kochi, Kerala</div>
+        </div>
+        <div class="test-card">
+          <div class="test-avatar" style="background: #e2f0cb;">👩🏻‍🦱</div>
+          <p>"As a first-gen college student, finding a voice is hard. Here, my voice actually matters."</p>
+          <div class="test-author">Neha Bhosale</div>
+          <div class="test-loc">📍 Nashik, Maharashtra</div>
+        </div>
+        <div class="test-card">
+          <div class="test-avatar" style="background: #f4cae0;">👨🏾‍💻</div>
+          <p>"These aren't digital fights over a trend — GenZ4India acts about what we actually care about."</p>
+          <div class="test-author">Pradeep Kumar</div>
+          <div class="test-loc">📍 Hyderabad, Telangana</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <div class="section-label" style="color: var(--accent-lime); justify-content: center;">Next Steps</div>
+      <h2>INDIA NEEDS YOU.<br>JOIN TODAY.</h2>
+      <p>Get updates, find your local chapter, and take the first step towards building the India you want to live in.</p>
+      
+      <div class="form-group">
+        <input type="email" placeholder="Enter your email address">
+        <button type="button">Join Now</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>GENZ4<span>INDIA</span></h3>
+        <p>India's youth movement building a better Bharat — one action at a time.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Movement</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Pillars</a></li>
+          <li><a href="#">Local Chapters</a></li>
+          <li><a href="#">Events</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Get Involved</h4>
+        <ul>
+          <li><a href="#">Volunteer</a></li>
+          <li><a href="#">Campaigns</a></li>
+          <li><a href="#">Internships</a></li>
+          <li><a href="#">Partner with Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 GenZ4India Movement. All rights reserved. Made with 💛 in Bharat.
+    </div>
+  </footer>
+
+</body>
+                                        </html>
+                                        
