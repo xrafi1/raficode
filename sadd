@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifat...</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #000000; /* Pure Black Background */
+            color: #ffffff; /* White Text */
+            font-family: 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.8;
+        }
+
+        .message-container {
+            max-width: 650px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 40px;
+            border-radius: 8px;
+            border-left: 3px solid #333333;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+
+        p.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .ending {
+            margin-top: 40px;
+            font-size: 1.2rem;
+            text-align: right;
+            color: #aaaaaa;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="message-container">
+        <p>Dekho Rifat, tumse bahut jyada pyar karta hun main. Itna ki batana mushkil hai.</p>
+        
+        <p>Par jo tumne mere saath kiya — woh bahut galat tha. Bahut zyada galat.</p>
+        
+        <p>Is tarah rulate ho mujhe, aur tumhe ehsas bhi nahi hota. Par ek din khuda ke saamne jawab dena padega tumhe. Har cheez ka hisaab hoga wahan.</p>
+        
+        <p>Agar tum Allah ko maanti hoti... toh aisa nahi karte mere saath kabhi.</p>
+        
+        <p>Ab main kya bataaun — jeene ka man hi nahi raha. Andar se toot gaya hun bilkul. Mann mein kitni cheezein aati hain... aisi cheezein jo sochni bhi nahi chahiye.</p>
+        
+        <p class="ending">Bas itna kehna hai — kash tumne samjha hota. Kash...</p>
+    </div>
+
+    <script>
+        // Har line dheere-dheere screen par aayegi
+        document.addEventListener("DOMContentLoaded", () => {
+            const paragraphs = document.querySelectorAll(".message-container p");
+            
+            paragraphs.forEach((p, index) => {
+                setTimeout(() => {
+                    p.classList.add("visible");
+                }, index * 1200); // 1.2 seconds ka gap har line ke beech me
+            });
+        });
+    </script>
+
+</body>
+</html>
