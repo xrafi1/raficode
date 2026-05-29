@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kash Tumne Samjha Hota...</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #d1d1d1;
+            font-family: 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.8;
+        }
+
+        .message-container {
+            max-width: 650px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #555;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+
+        p.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .highlight {
+            color: #ffffff;
+            font-style: italic;
+        }
+
+        .ending {
+            margin-top: 40px;
+            font-size: 1.2rem;
+            text-align: right;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="message-container" id="messageBox">
+        <p>Dekho <span class="highlight">Rifat</span>, tumse bahut jyada pyar karta hun main. Itna ki batana mushkil hai.</p>
+        
+        <p>Par jo tumne mere saath kiya — woh bahut galat tha. Bahut zyada galat.</p>
+        
+        <p>Is tarah rulate ho mujhe, aur tumhe ehsas bhi nahi hota. Par ek din khuda ke saamne jawab dena padega tumhe. Har cheez ka hisaab hoga wahan.</p>
+        
+        <p>Agar tum Allah ko maanti hoti... toh aisa nahi karte mere saath kabhi.</p>
+        
+        <p>Ab main kya bataaun — jeene ka man hi nahi raha. Andar se toot gaya hun bilkul. Mann mein kitni cheezein aati hain... aisi cheezein jo sochni bhi nahi chahiye.</p>
+        
+        <p class="ending">Bas itna kehna hai — kash tumne samjha hota.<br>Kash...</p>
+    </div>
+
+    <script>
+        // JavaScript to slowly fade in paragraphs one by one for emotional impact
+        document.addEventListener("DOMContentLoaded", () => {
+            const paragraphs = document.querySelectorAll(".message-container p");
+            
+            paragraphs.forEach((p, index) => {
+                setTimeout(() => {
+                    p.classList.add("visible");
+                }, index * 1200); // 1.2 seconds delay between each line appearing
+            });
+        });
+    </script>
+
+</body>
+</html>
+
