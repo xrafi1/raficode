@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rifat ke liye</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Nastaliq+Urdu&family=Crimson+Pro:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --ink: #1a1008;
+      --paper: #f5ede0;
+      --warm: #c8956b;
+      --rose: #b05b5b;
+      --gold: #c9a96e;
+      --faded: #8b7355;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: #2a1f14;
+      font-family: 'Crimson Pro', Georgia, serif;
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(180, 100, 60, 0.15), transparent),
+        radial-gradient(ellipse 50% 60% at 80% 70%, rgba(100, 50, 50, 0.12), transparent);
+      pointer-events: none;
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0;
+      animation: float-up var(--dur) var(--delay) infinite ease-in-out;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.1; }
+      100% { transform: translateY(-10vh) translateX(var(--drift)) scale(0.5); opacity: 0; }
+    }
+
+    /* Letter wrapper */
+    .letter-wrap {
+      position: relative;
+      max-width: 680px;
+      width: 100%;
+      opacity: 0;
+      animation: emerge 1.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes emerge {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Paper */
+    .letter {
+      background: var(--paper);
+      border-radius: 2px;
+      padding: 4rem 4rem 5rem;
+      position: relative;
+      box-shadow:
+        0 2px 0 #c8b090,
+        0 4px 0 #b8a080,
+        0 30px 80px rgba(0,0,0,0.5),
+        0 80px 140px rgba(0,0,0,0.3);
+    }
+
+    /* Paper texture lines */
+    .letter::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 2px;
+      background-image: repeating-linear-gradient(
+        transparent,
+        transparent 27px,
+        rgba(139, 115, 85, 0.1) 27px,
+        rgba(139, 115, 85, 0.1) 28px
+      );
+      pointer-events: none;
+    }
+
+    /* Left margin line */
+    .letter::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 5.5rem;
+      width: 1px;
+      background: rgba(176, 91, 91, 0.2);
+      border-radius: 1px;
+    }
+
+    /* Wax seal */
+    .seal {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 56px;
+      background: radial-gradient(circle at 35% 35%, #c04040, #7a1a1a);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 20px rgba(120, 20, 20, 0.6), 0 0 0 2px #9a3030;
+      animation: seal-pulse 3s ease-in-out infinite;
+    }
+    @keyframes seal-pulse {
+      0%, 100% { box-shadow: 0 4px 20px rgba(120,20,20,0.6), 0 0 0 2px #9a3030; }
+      50%       { box-shadow: 0 4px 30px rgba(180,40,40,0.8), 0 0 0 3px #b04040; }
+    }
+
+    /* Header area */
+    .letter-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(139,115,85,0.25);
+    }
+
+    .date {
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--faded);
+      margin-bottom: 1rem;
+    }
+
+    .salutation {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-style: italic;
+      color: var(--rose);
+      line-height: 1.2;
+    }
+    .salutation span {
+      color: var(--ink);
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    /* Body paragraphs */
+    .letter-body {
+      font-size: 1.15rem;
+      line-height: 2;
+      color: #2a1f14;
+    }
+
+    .para {
+      margin-bottom: 1.6rem;
+      padding-left: 2rem;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: line-in 0.9s ease forwards;
+    }
+    .para:nth-child(1)  { animation-delay: 1.0s; }
+    .para:nth-child(2)  { animation-delay: 1.3s; }
+    .para:nth-child(3)  { animation-delay: 1.6s; }
+    .para:nth-child(4)  { animation-delay: 1.9s; }
+    .para:nth-child(5)  { animation-delay: 2.2s; }
+    .para:nth-child(6)  { animation-delay: 2.5s; }
+    @keyframes line-in {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .highlight {
+      color: var(--rose);
+      font-style: italic;
+    }
+
+    .arabic-ref {
+      font-size: 0.95rem;
+      color: var(--faded);
+      font-style: italic;
+    }
+
+    /* Divider */
+    .divider {
+      text-align: center;
+      margin: 2rem 0;
+      color: var(--gold);
+      font-size: 1.1rem;
+      letter-spacing: 0.4em;
+      opacity: 0.5;
+    }
+
+    /* Closing */
+    .closing {
+      margin-top: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      opacity: 0;
+      animation: line-in 1s 3s ease forwards;
+    }
+    .closing-word {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--faded);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    .signature {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-style: italic;
+      color: var(--ink);
+    }
+
+    /* Torn edge bottom */
+    .torn {
+      height: 20px;
+      background: var(--paper);
+      position: relative;
+      margin-top: -2px;
+      clip-path: polygon(
+        0% 0%, 3% 100%, 7% 20%, 12% 90%, 18% 10%,
+        23% 80%, 28% 0%, 33% 95%, 39% 15%,
+        44% 85%, 49% 5%, 54% 75%, 60% 0%,
+        65% 90%, 70% 20%, 76% 80%, 81% 0%,
+        86% 95%, 91% 15%, 96% 85%, 100% 0%
+      );
+    }
+
+    /* Floating hearts */
+    .hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .heart {
+      position: absolute;
+      bottom: -50px;
+      font-size: var(--sz);
+      opacity: 0;
+      animation: heart-rise var(--dur2) var(--delay2) infinite ease-in;
+      left: var(--left);
+    }
+    @keyframes heart-rise {
+      0%   { transform: translateY(0) rotate(-10deg) scale(0.5); opacity: 0; }
+      20%  { opacity: 0.6; }
+      80%  { opacity: 0.2; }
+      100% { transform: translateY(-110vh) rotate(10deg) scale(1); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .letter { padding: 3rem 1.8rem 3.5rem; }
+      .letter::after { left: 4rem; }
+      .para { padding-left: 1rem; }
+      .salutation { font-size: 1.7rem; }
+      .letter-body { font-size: 1.05rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Floating hearts -->
+  <div class="hearts" id="hearts"></div>
+
+  <div class="letter-wrap">
+    <div class="seal">💌</div>
+
+    <div class="letter">
+      <div class="letter-header">
+        <div class="date">Dil ki geheraion se — 2026</div>
+        <div class="salutation">Meri pyaari <span>Rifat</span>,</div>
+      </div>
+
+      <div class="letter-body">
+        <p class="para">
+          Tumse <span class="highlight">bahut jyada pyar karta hun</span> main. Itna ki batana mushkil hai —
+          alfaaz chote pad jaate hain, aur dil mein jo bhar aata hai, woh kaagaz par nahi aa paata.
+        </p>
+
+        <p class="para">
+          Par jo tumne mere saath kiya — woh <span class="highlight">bahut galat tha</span>. Bahut zyada galat.
+          Is tarah rulate ho mujhe, aur tumhe ehsas bhi nahi hota. Dard ko mein kahan le jaun, kise dikhaaun?
+        </p>
+
+        <div class="divider">· · · ✦ · · ·</div>
+
+        <p class="para">
+          Par ek baat yaad rakhna — <span class="highlight">ek din khuda ke saamne jawab dena padega.</span>
+          Har cheez ka hisaab hoga wahan. Koi cheez chhupi nahi rahegi — na tumhari, na meri.
+          <br/><span class="arabic-ref">وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ</span>
+        </p>
+
+        <p class="para">
+          Agar tum Allah ko sachchi maanti hoti... toh <span class="highlight">aisa nahi karte mere saath kabhi.</span>
+          Dil todna bhi ek gunah hai — aur woh gunah tumhare naam likhta ja raha hai kahin.
+        </p>
+
+        <p class="para">
+          Andar se toot gaya hun bilkul. Lekin phir bhi — 
+          dua karta hun ki tum khush raho. Tumhari zindagi mein <span class="highlight">sukoon aaye</span>,
+          chahe mujhe milta na ho. Yahi sachchi mohabbat hoti hai.
+        </p>
+
+        <p class="para">
+          Bas itna kehna tha — <span class="highlight">kash tumne samjha hota. Kash...</span>
+        </p>
+      </div>
+
+      <div class="closing">
+        <span class="closing-word">Tumhara hi rehega,</span>
+        <span class="signature">— Tum jante ho kaun 💔</span>
+      </div>
+    </div>
+    <div class="torn"></div>
+  </div>
+
+  <script>
+    // Particles
+    const pContainer = document.getElementById('particles');
+    for (let i = 0; i < 25; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left: ${Math.random() * 100}%;
+        --dur: ${6 + Math.random() * 10}s;
+        --delay: ${Math.random() * 10}s;
+        --drift: ${(Math.random() - 0.5) * 80}px;
+      `;
+      pContainer.appendChild(p);
+    }
+
+    // Floating hearts
+    const hContainer = document.getElementById('hearts');
+    const emojis = ['💔', '🌹', '💫', '✨', '🥀'];
+    for (let i = 0; i < 12; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      h.style.cssText = `
+        --left: ${5 + Math.random() * 90}%;
+        --sz: ${0.7 + Math.random() * 0.8}rem;
+        --dur2: ${8 + Math.random() * 12}s;
+        --delay2: ${Math.random() * 14}s;
+      `;
+      hContainer.appendChild(h);
+    }
+  </script>
+</body>
+</html>
