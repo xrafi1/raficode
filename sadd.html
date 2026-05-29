@@ -12,8 +12,9 @@
         }
 
         body {
-            background-color: #000000;
-            color: #ffffff;
+            /* White background with black text as requested */
+            background-color: #ffffff;
+            color: #000000;
             font-family: 'Georgia', serif;
             display: flex;
             justify-content: center;
@@ -21,13 +22,28 @@
             min-height: 100vh;
             padding: 20px;
             line-height: 1.8;
+            overflow: hidden; /* To prevent scrollbars from the heart */
         }
 
         .message-container {
+            position: relative; /* Essential for broken heart pseudo-element */
             max-width: 650px;
             text-align: left;
-            background: #000000;
+            background: #ffffff; /* White background for the message box */
             padding: 40px;
+        }
+
+        /* Large, animating broken heart pseudo-element in the background */
+        .message-container::after {
+            content: '💔';
+            font-size: 20rem; /* Very large heart */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(0, 0, 0, 0.03); /* Very faint grey on white */
+            z-index: -1; /* Behind text */
+            animation: heartbreak-breaking 15s ease-in-out infinite; /* Very slow and subtle animation */
         }
 
         p {
@@ -39,7 +55,23 @@
             margin-top: 40px;
             font-size: 1.2rem;
             text-align: right;
-            color: #aaaaaa;
+            color: #555555; /* Slightly darker grey for white background */
+        }
+
+        /* Defines the heartbreak-breaking animation */
+        @keyframes heartbreak-breaking {
+            0% {
+                opacity: 0.03;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.08; /* Becomes slightly more visible */
+                transform: translate(-50%, -50%) scale(1.05) rotate(1deg); /* Slight swell and twist, like cracking */
+            }
+            100% {
+                opacity: 0.03;
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
         }
     </style>
 </head>
