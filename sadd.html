@@ -12,8 +12,8 @@
         }
 
         body {
-            background-color: #000000; /* Pure Black Background */
-            color: #ffffff; /* White Text */
+            background-color: #000000;
+            color: #ffffff;
             font-family: 'Georgia', serif;
             display: flex;
             justify-content: center;
@@ -26,23 +26,13 @@
         .message-container {
             max-width: 650px;
             text-align: left;
-            background: rgba(255, 255, 255, 0.02);
+            background: #000000;
             padding: 40px;
-            border-radius: 8px;
-            border-left: 3px solid #333333;
         }
 
         p {
             font-size: 1.1rem;
             margin-bottom: 20px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1.5s ease, transform 1.5s ease;
-        }
-
-        p.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         .ending {
@@ -68,19 +58,6 @@
         
         <p class="ending">Bas itna kehna hai — kash tumne samjha hota. Kash...</p>
     </div>
-
-    <script>
-        // Har line dheere-dheere screen par aayegi
-        document.addEventListener("DOMContentLoaded", () => {
-            const paragraphs = document.querySelectorAll(".message-container p");
-            
-            paragraphs.forEach((p, index) => {
-                setTimeout(() => {
-                    p.classList.add("visible");
-                }, index * 1200); // 1.2 seconds ka gap har line ke beech me
-            });
-        });
-    </script>
 
 </body>
 </html>
