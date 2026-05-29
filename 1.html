@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifat...</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.8;
+            overflow: hidden; 
+        }
+
+        /* The container for the prominent broken heart */
+        .background-heart {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            font-size: 18rem;
+            z-index: -1; /* Behind the text */
+            color: rgba(0, 0, 0, 0.06); /* Faint grey so it doesn't block text */
+            user-select: none;
+            /* Heartbeat, struggle, and falling animation */
+            animation: heartbreak-shatter 5s ease-in-out infinite; 
+        }
+
+        .message-container {
+            max-width: 650px;
+            text-align: left;
+            background: transparent;
+            padding: 40px;
+            z-index: 1; /* Keep text above the animation */
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .ending {
+            margin-top: 40px;
+            font-size: 1.2rem;
+            text-align: right;
+            color: #555555;
+        }
+
+        /* Complex animation: Heartbeat -> Shake/Crack -> Fall and Fade */
+        @keyframes heartbreak-shatter {
+            0% { 
+                transform: translate(-50%, -50%) scale(1); 
+                opacity: 0;
+            }
+            10% { 
+                transform: translate(-50%, -50%) scale(1); 
+                opacity: 1;
+            }
+            20% { 
+                transform: translate(-50%, -50%) scale(1.1); 
+            }
+            30% { 
+                transform: translate(-50%, -50%) scale(1); 
+            }
+            40% { 
+                transform: translate(-50%, -50%) scale(1.15) rotate(-5deg); 
+            }
+            45% { 
+                transform: translate(-50%, -50%) scale(1.15) rotate(5deg); 
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.15) rotate(-5deg); 
+            }
+            60% { 
+                transform: translate(-50%, -30%) scale(1) rotate(0deg); 
+                opacity: 1;
+            }
+            85% { 
+                transform: translate(-50%, 40%) scale(0.8); 
+                opacity: 0; 
+            }
+            100% { 
+                transform: translate(-50%, 40%) scale(0.8); 
+                opacity: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Broken Heart Element -->
+    <div class="background-heart">💔</div>
+
+    <div class="message-container">
+        <p>Dekho Rifat, tumse bahut jyada pyar karta hun main. Itna ki batana mushkil hai.</p>
+        
+        <p>Par jo tumne mere saath kiya — woh bahut galat tha. Bahut zyada galat.</p>
+        
+        <p>Is tarah rulate ho mujhe, aur tumhe ehsas bhi nahi hota. Par ek din khuda ke saamne jawab dena padega tumhe. Har cheez ka hisaab hoga wahan.</p>
+        
+        <p>Agar tum Allah ko maanti hoti... toh aisa nahi karte mere saath kabhi.</p>
+        
+        <p>Ab main kya bataaun — jeene ka man hi nahi raha. Andar se toot gaya hun bilkul. Mann mein kitni cheezein aati hain... aisi cheezein jo sochni bhi nahi chahiye.</p>
+        
+        <p class="ending">Bas itna kehna hai — kash tumne samjha hota. Kash...</p>
+    </div>
+
+</body>
+</html>
+
