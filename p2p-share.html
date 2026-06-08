@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PeerDrop — P2P File Sharing</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #00ffb2;
+    --accent2: #7b5ef8;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --danger: #ff4d6d;
+    --warn: #ffb340;
+    --radius: 12px;
+    --glow: 0 0 24px rgba(0,255,178,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,178,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,178,.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: -30vh; right: -20vw;
+    width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(123,94,248,.12) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .shell {
+    position: relative; z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 32px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 20px;
+    box-shadow: var(--glow);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 16px rgba(0,255,178,0.3); }
+    50%      { box-shadow: 0 0 36px rgba(0,255,178,0.7); }
+  }
+  .logo h1 {
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .status-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+    transition: all .3s;
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted);
+    transition: background .3s;
+  }
+  .status-badge.online { border-color: var(--accent); color: var(--accent); }
+  .status-badge.online .status-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 32px;
+  }
+  .tab {
+    flex: 1; padding: 12px;
+    border: none; border-radius: 9px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: .95rem; font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    background: var(--surface2);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; animation: fadeIn .3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: #3a3a55; }
+  .card-title {
+    font-size: .75rem; font-weight: 700; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  /* ── MY ID ── */
+  .id-display {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 14px 18px;
+  }
+  .id-text {
+    flex: 1;
+    font-family: 'Space Mono', monospace;
+    font-size: .95rem;
+    color: var(--accent);
+    word-break: break-all;
+  }
+  .btn-copy {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 7px;
+    padding: 7px 14px; font-family: 'Space Mono', monospace;
+    font-size: .75rem; cursor: pointer; transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-copy.copied { border-color: var(--accent); color: var(--accent); background: rgba(0,255,178,.08); }
+
+  /* ── INPUTS ── */
+  .input-group { display: flex; gap: 10px; }
+  input[type="text"] {
+    flex: 1; padding: 13px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: .9rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="text"]:focus { border-color: var(--accent2); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 13px 22px;
+    border: none; border-radius: 9px;
+    font-family: 'Syne', sans-serif;
+    font-size: .9rem; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+    display: inline-flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent); color: #000;
+    box-shadow: 0 4px 20px rgba(0,255,178,0.2);
+  }
+  .btn-primary:hover { box-shadow: 0 4px 30px rgba(0,255,178,0.4); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-danger { background: rgba(255,77,109,.15); color: var(--danger); border: 1px solid rgba(255,77,109,.3); }
+  .btn-danger:hover { background: rgba(255,77,109,.25); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+  /* ── DROP ZONE ── */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,255,178,.04);
+    box-shadow: var(--glow);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .drop-icon { font-size: 3rem; margin-bottom: 16px; line-height: 1; }
+  .drop-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+  .drop-sub { font-size: .85rem; color: var(--muted); }
+
+  /* ── FILE LIST ── */
+  .file-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .file-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 12px 16px;
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+  .file-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: .9rem; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .file-size { font-size: .75rem; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .file-remove {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 1.1rem; padding: 4px;
+    border-radius: 5px; transition: color .2s;
+  }
+  .file-remove:hover { color: var(--danger); }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    background: var(--surface2); border-radius: 999px;
+    height: 6px; overflow: hidden; margin-top: 6px;
+  }
+  .progress-bar {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    width: 0%; transition: width .3s;
+    box-shadow: 0 0 10px rgba(0,255,178,.5);
+  }
+
+  /* ── TRANSFER LIST ── */
+  .transfer-item {
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 14px 16px;
+    animation: slideIn .25s ease;
+  }
+  .transfer-header { display: flex; align-items: center; gap: 10px; }
+  .transfer-name { font-size: .9rem; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .transfer-badge {
+    font-family: 'Space Mono', monospace; font-size: .65rem;
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .badge-sending { background: rgba(123,94,248,.2); color: var(--accent2); }
+  .badge-receiving { background: rgba(0,255,178,.1); color: var(--accent); }
+  .badge-done { background: rgba(0,255,178,.2); color: var(--accent); }
+  .badge-error { background: rgba(255,77,109,.15); color: var(--danger); }
+  .transfer-meta { font-size: .75rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  /* ── PEERS ── */
+  .peer-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 14px 16px;
+    animation: slideIn .25s ease;
+  }
+  .peer-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: grid; place-items: center; font-size: .85rem; font-weight: 700;
+    color: #000; flex-shrink: 0;
+  }
+  .peer-id { font-family: 'Space Mono', monospace; font-size: .8rem; color: var(--muted); }
+  .peer-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* ── CHAT ── */
+  .chat-messages {
+    height: 280px; overflow-y: auto;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 12px;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .msg {
+    max-width: 70%; padding: 10px 14px;
+    border-radius: 12px; font-size: .88rem; line-height: 1.5;
+    animation: fadeIn .2s ease;
+  }
+  .msg.me {
+    align-self: flex-end;
+    background: rgba(0,255,178,.12);
+    border: 1px solid rgba(0,255,178,.25);
+    border-bottom-right-radius: 3px;
+  }
+  .msg.them {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 3px;
+  }
+  .msg-meta { font-size: .67rem; color: var(--muted); margin-top: 4px; font-family: 'Space Mono', monospace; }
+  .msg-empty { text-align: center; color: var(--muted); font-size: .85rem; margin: auto; }
+
+  /* ── LOG ── */
+  .log {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 14px 16px;
+    font-family: 'Space Mono', monospace; font-size: .75rem;
+    max-height: 180px; overflow-y: auto;
+    color: var(--muted);
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .log-entry { padding: 2px 0; }
+  .log-entry .ts { color: #444; margin-right: 8px; }
+  .log-entry.info .msg-t { color: var(--muted); }
+  .log-entry.success .msg-t { color: var(--accent); }
+  .log-entry.error .msg-t { color: var(--danger); }
+  .log-entry.warn .msg-t { color: var(--warn); }
+
+  /* ── EMPTY STATES ── */
+  .empty {
+    text-align: center; padding: 40px;
+    color: var(--muted); font-size: .88rem;
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: .4; }
+
+  /* ── NOTIFICATION ── */
+  #notif {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px;
+    font-size: .88rem; max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    transform: translateY(20px); opacity: 0;
+    transition: all .3s; pointer-events: none; z-index: 100;
+  }
+  #notif.show { transform: translateY(0); opacity: 1; }
+  #notif.success { border-color: var(--accent); }
+  #notif.error { border-color: var(--danger); }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px) {
+    .input-group { flex-direction: column; }
+    header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <h1>Peer<span>Drop</span></h1>
+    </div>
+    <div class="status-badge" id="statusBadge">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting…</span>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('share')">📤 Share</button>
+    <button class="tab" onclick="switchTab('receive')">📥 Receive</button>
+    <button class="tab" onclick="switchTab('peers')">👥 Peers</button>
+    <button class="tab" onclick="switchTab('chat')">💬 Chat</button>
+  </div>
+
+  <!-- ── SHARE PANEL ── -->
+  <div class="panel active" id="panel-share">
+
+    <div class="card">
+      <div class="card-title">Your Peer ID</div>
+      <div class="id-display">
+        <span class="id-text" id="myPeerId">Generating…</span>
+        <button class="btn-copy" id="copyBtn" onclick="copyId()">Copy</button>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:12px">Share this ID so others can connect to you and send files.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Connect to Peer</div>
+      <div class="input-group">
+        <input type="text" id="targetId" placeholder="Paste peer ID here…" />
+        <button class="btn btn-primary" onclick="connectToPeer()">Connect</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Send Files</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)" />
+        <div class="drop-icon">📂</div>
+        <div class="drop-title">Drop files here or click to browse</div>
+        <div class="drop-sub">Any file type · No size limit (browser memory permitting)</div>
+      </div>
+      <div class="file-list" id="fileList"></div>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" id="sendActions" hidden>
+        <button class="btn btn-primary" onclick="sendFiles()">⚡ Send to Connected Peers</button>
+        <button class="btn btn-secondary" onclick="clearFiles()">Clear</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── RECEIVE PANEL ── -->
+  <div class="panel" id="panel-receive">
+
+    <div class="card">
+      <div class="card-title">Incoming Transfers</div>
+      <div id="transferList" class="file-list">
+        <div class="empty"><div class="empty-icon">📭</div>Waiting for incoming files…</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Completed Downloads</div>
+      <div id="downloadList" class="file-list">
+        <div class="empty"><div class="empty-icon">💾</div>Downloads appear here</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── PEERS PANEL ── -->
+  <div class="panel" id="panel-peers">
+
+    <div class="card">
+      <div class="card-title">Connected Peers (<span id="peerCount">0</span>)</div>
+      <div id="peerList">
+        <div class="empty"><div class="empty-icon">🔌</div>No peers connected yet. Share your ID or connect to someone.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Activity Log</div>
+      <div class="log" id="activityLog">
+        <div class="log-entry info"><span class="ts">--:--:--</span><span class="msg-t">Initializing PeerJS…</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CHAT PANEL ── -->
+  <div class="panel" id="panel-chat">
+
+    <div class="card">
+      <div class="card-title">Peer Chat</div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg-empty">Connect to a peer to start chatting.</div>
+      </div>
+      <div class="input-group">
+        <input type="text" id="chatInput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendChat()" />
+        <button class="btn btn-primary" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- NOTIFICATION -->
+<div id="notif"></div>
+
+<script>
+// ──────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────
+let myPeer = null;
+let connections = {};   // peerId → DataConnection
+let pendingFiles = [];  // File[] staged to send
+let transfers = {};     // id → {name,size,chunks,received,el}
+
+// ──────────────────────────────────────
+//  INIT PEER
+// ──────────────────────────────────────
+function initPeer() {
+  myPeer = new Peer(undefined, {
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    }
+  });
+
+  myPeer.on('open', id => {
+    document.getElementById('myPeerId').textContent = id;
+    setStatus('online', 'Online · ' + id.slice(0,8) + '…');
+    log('success', 'Peer ID assigned: ' + id);
+  });
+
+  myPeer.on('connection', conn => {
+    log('info', 'Incoming connection from ' + conn.peer.slice(0,12) + '…');
+    setupConnection(conn);
+  });
+
+  myPeer.on('error', err => {
+    log('error', err.message);
+    if(err.type === 'peer-unavailable') notify('Peer not found or offline.','error');
+    else notify(err.message, 'error');
+  });
+
+  myPeer.on('disconnected', () => {
+    setStatus('offline','Disconnected');
+    log('warn','Peer disconnected from server. Attempting reconnect…');
+    setTimeout(()=>myPeer.reconnect(), 3000);
+  });
+}
+
+// ──────────────────────────────────────
+//  CONNECTION SETUP
+// ──────────────────────────────────────
+function setupConnection(conn) {
+  const pid = conn.peer;
+  connections[pid] = conn;
+
+  conn.on('open', () => {
+    log('success', 'Connected to ' + pid.slice(0,12) + '…');
+    notify('Peer connected: ' + pid.slice(0,10) + '…', 'success');
+    renderPeers();
+  });
+
+  conn.on('data', data => {
+    handleData(pid, data);
+  });
+
+  conn.on('close', () => {
+    log('warn', 'Peer disconnected: ' + pid.slice(0,12) + '…');
+    delete connections[pid];
+    renderPeers();
+    notify('Peer disconnected.', '');
+  });
+
+  conn.on('error', err => {
+    log('error', 'Connection error: ' + err.message);
+  });
+}
+
+function connectToPeer() {
+  const id = document.getElementById('targetId').value.trim();
+  if(!id){ notify('Enter a peer ID first.','error'); return; }
+  if(id === myPeer.id){ notify("That's your own ID!",'error'); return; }
+  if(connections[id]){ notify('Already connected to this peer.',''); return; }
+  log('info', 'Connecting to ' + id.slice(0,12) + '…');
+  const conn = myPeer.connect(id, { reliable: true, serialization: 'raw' });
+  setupConnection(conn);
+  document.getElementById('targetId').value = '';
+}
+
+// ──────────────────────────────────────
+//  DATA PROTOCOL
+//  We send structured JSON meta first, then raw ArrayBuffer chunks
+// ──────────────────────────────────────
+const CHUNK = 64 * 1024; // 64 KB
+
+function handleData(pid, data) {
+  // Text messages
+  if(typeof data === 'string') {
+    let msg;
+    try { msg = JSON.parse(data); } catch { return; }
+    
+    if(msg.type === 'chat') {
+      appendChat(msg.text, 'them', pid);
+      return;
+    }
+    if(msg.type === 'file-meta') {
+      startReceiving(msg);
+      return;
+    }
+    if(msg.type === 'file-chunk-meta') {
+      // signals the next binary blob belongs to this transfer
+      currentChunkMeta = msg;
+      return;
+    }
+    if(msg.type === 'file-done') {
+      finishReceiving(msg.id);
+      return;
+    }
+    return;
+  }
+
+  // Binary chunk
+  if(data instanceof ArrayBuffer && currentChunkMeta) {
+    const { id, index } = currentChunkMeta;
+    currentChunkMeta = null;
+    if(transfers[id]) {
+      transfers[id].chunks[index] = data;
+      transfers[id].received += data.byteLength;
+      updateTransferUI(id);
+    }
+  }
+}
+
+let currentChunkMeta = null;
+
+function startReceiving(meta) {
+  switchTab('receive');
+  transfers[meta.id] = {
+    name: meta.name,
+    size: meta.size,
+    totalChunks: meta.totalChunks,
+    chunks: new Array(meta.totalChunks),
+    received: 0,
+    el: null
+  };
+
+  const list = document.getElementById('transferList');
+  // Remove empty state
+  list.querySelector('.empty')?.remove();
+
+  const el = document.createElement('div');
+  el.className = 'transfer-item';
+  el.id = 'tx-' + meta.id;
+  el.innerHTML = `
+    <div class="transfer-header">
+      <span>${fileIcon(meta.name)}</span>
+      <span class="transfer-name">${escHtml(meta.name)}</span>
+      <span class="transfer-badge badge-receiving">Receiving</span>
+    </div>
+    <div class="transfer-meta">${fmtSize(meta.size)}</div>
+    <div class="progress-wrap"><div class="progress-bar" id="pb-${meta.id}"></div></div>
+  `;
+  list.appendChild(el);
+  transfers[meta.id].el = el;
+  log('info', 'Receiving: ' + meta.name + ' (' + fmtSize(meta.size) + ')');
+}
+
+function updateTransferUI(id) {
+  const t = transfers[id];
+  if(!t) return;
+  const pct = Math.round((t.received / t.size) * 100);
+  const pb = document.getElementById('pb-' + id);
+  if(pb) pb.style.width = pct + '%';
+}
+
+function finishReceiving(id) {
+  const t = transfers[id];
+  if(!t) return;
+
+  const blob = new Blob(t.chunks);
+  const url = URL.createObjectURL(blob);
+
+  // Update transfer item badge
+  const el = document.getElementById('tx-' + id);
+  if(el) {
+    el.querySelector('.transfer-badge').className = 'transfer-badge badge-done';
+    el.querySelector('.transfer-badge').textContent = 'Done';
+    const pb = document.getElementById('pb-' + id);
+    if(pb) pb.style.width = '100%';
+  }
+
+  // Add to downloads
+  const dlList = document.getElementById('downloadList');
+  dlList.querySelector('.empty')?.remove();
+  const dlEl = document.createElement('div');
+  dlEl.className = 'file-item';
+  dlEl.innerHTML = `
+    <span class="file-icon">${fileIcon(t.name)}</span>
+    <div class="file-info">
+      <div class="file-name">${escHtml(t.name)}</div>
+      <div class="file-size">${fmtSize(t.size)}</div>
+    </div>
+    <a href="${url}" download="${escHtml(t.name)}" class="btn btn-primary" style="text-decoration:none;font-size:.8rem;padding:8px 14px">⬇ Save</a>
+  `;
+  dlList.appendChild(dlEl);
+
+  log('success', 'Received: ' + t.name);
+  notify('File received: ' + t.name, 'success');
+  delete transfers[id];
+}
+
+// ──────────────────────────────────────
+//  SENDING
+// ──────────────────────────────────────
+function handleFiles(files) {
+  for(const f of files) pendingFiles.push(f);
+  renderFileList();
+}
+
+function renderFileList() {
+  const list = document.getElementById('fileList');
+  const actions = document.getElementById('sendActions');
+  list.innerHTML = '';
+  if(pendingFiles.length === 0) { actions.hidden = true; return; }
+  actions.hidden = false;
+  pendingFiles.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'file-item';
+    el.innerHTML = `
+      <span class="file-icon">${fileIcon(f.name)}</span>
+      <div class="file-info">
+        <div class="file-name">${escHtml(f.name)}</div>
+        <div class="file-size">${fmtSize(f.size)}</div>
+      </div>
+      <button class="file-remove" onclick="removeFile(${i})">✕</button>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function removeFile(i) {
+  pendingFiles.splice(i, 1);
+  renderFileList();
+}
+
+function clearFiles() {
+  pendingFiles = [];
+  renderFileList();
+}
+
+async function sendFiles() {
+  const peers = Object.values(connections);
+  if(peers.length === 0){ notify('Connect to a peer first.','error'); return; }
+  if(pendingFiles.length === 0){ notify('Select files first.','error'); return; }
+
+  for(const file of pendingFiles) {
+    const id = Math.random().toString(36).slice(2);
+    const totalChunks = Math.ceil(file.size / CHUNK);
+
+    // Send meta
+    for(const conn of peers) {
+      conn.send(JSON.stringify({
+        type: 'file-meta', id, name: file.name,
+        size: file.size, totalChunks
+      }));
+    }
+
+    // Add sending UI
+    addSendingUI(id, file, peers);
+
+    // Read and send chunks
+    const buffer = await file.arrayBuffer();
+    let sent = 0;
+    for(let i = 0; i < totalChunks; i++) {
+      const chunk = buffer.slice(i * CHUNK, (i+1) * CHUNK);
+      for(const conn of peers) {
+        conn.send(JSON.stringify({ type: 'file-chunk-meta', id, index: i }));
+        conn.send(chunk);
+      }
+      sent += chunk.byteLength;
+      updateSendUI(id, sent, file.size);
+      // Yield to browser
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    for(const conn of peers) {
+      conn.send(JSON.stringify({ type: 'file-done', id }));
+    }
+    finishSendUI(id, file.name);
+    log('success', 'Sent: ' + file.name);
+  }
+
+  clearFiles();
+}
+
+let sendUIs = {};
+function addSendingUI(id, file, peers) {
+  // Put in the peers panel log or inline; let's use a small overlay on share panel
+  // We'll just add entries to transfer panel (send side) via log
+  log('info', 'Sending ' + file.name + ' to ' + peers.length + ' peer(s)…');
+}
+function updateSendUI(id, sent, total) {
+  // We could show progress in file-list area, but for simplicity log it
+}
+function finishSendUI(id, name) {
+  notify('Sent: ' + name, 'success');
+}
+
+// ──────────────────────────────────────
+//  CHAT
+// ──────────────────────────────────────
+function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if(!text) return;
+  const peers = Object.values(connections);
+  if(peers.length === 0){ notify('Not connected to any peer.','error'); return; }
+  for(const conn of peers) conn.send(JSON.stringify({ type:'chat', text }));
+  appendChat(text, 'me');
+  inp.value = '';
+}
+
+function appendChat(text, who, pid) {
+  const box = document.getElementById('chatMessages');
+  box.querySelector('.msg-empty')?.remove();
+  const el = document.createElement('div');
+  el.className = 'msg ' + who;
+  const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  el.innerHTML = `${escHtml(text)}<div class="msg-meta">${who === 'them' ? (pid||'').slice(0,8)+'… · ' : ''}${now}</div>`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ──────────────────────────────────────
+//  PEERS UI
+// ──────────────────────────────────────
+function renderPeers() {
+  const ids = Object.keys(connections);
+  document.getElementById('peerCount').textContent = ids.length;
+  const list = document.getElementById('peerList');
+  if(ids.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🔌</div>No peers connected yet.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  for(const pid of ids) {
+    const el = document.createElement('div');
+    el.className = 'peer-item';
+    el.innerHTML = `
+      <div class="peer-avatar">${pid.charAt(0).toUpperCase()}</div>
+      <div>
+        <div style="font-size:.88rem;font-weight:600">Peer</div>
+        <div class="peer-id">${pid}</div>
+      </div>
+      <div class="peer-actions">
+        <button class="btn btn-danger" style="padding:7px 12px;font-size:.78rem" onclick="disconnectPeer('${pid}')">Disconnect</button>
+      </div>
+    `;
+    list.appendChild(el);
+  }
+}
+
+function disconnectPeer(pid) {
+  if(connections[pid]) { connections[pid].close(); delete connections[pid]; }
+  renderPeers();
+  log('info', 'Disconnected from ' + pid.slice(0,12) + '…');
+}
+
+// ──────────────────────────────────────
+//  HELPERS
+// ──────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['share','receive','peers','chat'][i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function setStatus(state, text) {
+  const badge = document.getElementById('statusBadge');
+  badge.className = 'status-badge ' + (state === 'online' ? 'online' : '');
+  document.getElementById('statusText').textContent = text;
+}
+
+function copyId() {
+  const id = document.getElementById('myPeerId').textContent;
+  navigator.clipboard.writeText(id).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+let notifTimer;
+function notify(msg, type='') {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(()=>{ el.className=''; }, 3500);
+}
+
+function log(level, msg) {
+  const box = document.getElementById('activityLog');
+  const el = document.createElement('div');
+  el.className = 'log-entry ' + level;
+  const ts = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.innerHTML = `<span class="ts">${ts}</span><span class="msg-t">${escHtml(msg)}</span>`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+
+function fmtSize(n) {
+  if(n<1024) return n+'B';
+  if(n<1048576) return (n/1024).toFixed(1)+'KB';
+  if(n<1073741824) return (n/1048576).toFixed(2)+'MB';
+  return (n/1073741824).toFixed(2)+'GB';
+}
+
+function fileIcon(name) {
+  const ext = (name.split('.').pop()||'').toLowerCase();
+  const icons = {
+    pdf:'📄',png:'🖼',jpg:'🖼',jpeg:'🖼',gif:'🖼',webp:'🖼',svg:'🖼',
+    mp4:'🎬',mov:'🎬',avi:'🎬',mkv:'🎬',mp3:'🎵',wav:'🎵',flac:'🎵',
+    zip:'🗜',rar:'🗜','7z':'🗜',tar:'🗜',
+    doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',ppt:'📊',pptx:'📊',
+    txt:'📃',json:'⚙',js:'⚙',ts:'⚙',html:'🌐',css:'🎨',py:'🐍',
+    exe:'⚙',dmg:'💿',iso:'💿'
+  };
+  return icons[ext] || '📦';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ──────────────────────────────────────
+//  DRAG & DROP
+// ──────────────────────────────────────
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+// ──────────────────────────────────────
+//  BOOT
+// ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  setStatus('offline','Connecting…');
+  initPeer();
+});
+</script>
+</body>
+</html>
