@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Setup Commands Cheatsheet - White/Black</title>
+  <style>
+    :root {
+      /* New White and Black Theme Variables */
+      --bg-color: #f0f2f5; /* Light gray for subtle contrast */
+      --card-bg: #ffffff;    /* Pure white for cards */
+      --text-main: #1a1a1a;  /* Near black for main text */
+      --text-sub: #5f6a7d;   /* Medium gray for subtle text */
+      --accent-color: #000000; /* Pure black for accents */
+      --code-bg: #e2e8f0;    /* Light gray for code background */
+      --btn-bg: #2d3748;     /* Dark gray button */
+      --btn-hover: #1a1a1a;  /* Pure black button hover */
+      --btn-success: #22c55e; /* Keep success color green */
+      
+      /* NEW: Highlight color for copied text */
+      --highlight-color: #fef08a; /* A clear yellow marker-like highlight */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 768px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.8rem;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Subtle shadow for white theme */
+      border: 1px solid #d1d5db; /* Light gray border */
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+    }
+
+    .code-block {
+      background-color: var(--code-bg);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    pre {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.95rem;
+      color: #1a1a1a; /* Dark text for code */
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-right: 1rem;
+    }
+
+    /* Style for the text itself */
+    code {
+      background-color: transparent; /* Default */
+      padding: 0 4px; /* Slight padding for the highlight effect */
+      transition: background-color 0.1s; /* Smooth transition for highlight */
+    }
+
+    /* NEW: Highlighting class for copied text */
+    code.highlight-text {
+      background-color: var(--highlight-color);
+      border-radius: 3px;
+    }
+
+    .copy-btn {
+      background-color: var(--btn-bg);
+      color: #ffffff; /* White text for contrast */
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: background-color 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      background-color: var(--btn-hover);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.96);
+    }
+
+    .copy-btn.copied {
+      background-color: var(--btn-success);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>LAMP Stack & SSL Setup Commands</h1>
+
+    <!-- New Card: ubuntu -->
+    <div class="card">
+      <div class="card-title">Ubuntu User</div>
+      <div class="code-block">
+        <pre><code>ubuntu</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- New Card: clear -->
+    <div class="card">
+      <div class="card-title">Clear Terminal</div>
+      <div class="code-block">
+        <pre><code>clear</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-title">Update apt</div>
+      <div class="code-block">
+        <pre><code>sudo apt-get update</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-title">Install MySQL</div>
+      <div class="code-block">
+        <pre><code>sudo apt-get install mysql-server</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-title">MySQL Secure Installation</div>
+      <div class="code-block">
+        <pre><code>sudo mysql_secure_installation</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+      <div class="card-title">Install Apache</div>
+      <div class="code-block">
+        <pre><code>sudo apt-get install apache2</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card">
+      <div class="card-title">Install PHP</div>
+      <div class="code-block">
+        <pre><code>sudo apt-get install php libapache2-mod-php</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="card">
+      <div class="card-title">Restart Apache</div>
+      <div class="code-block">
+        <pre><code>sudo systemctl restart apache2</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="card">
+      <div class="card-title">Install phpMyAdmin</div>
+      <div class="code-block">
+        <pre><code>sudo apt-get install phpmyadmin php-mbstring</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 8 -->
+    <div class="card">
+      <div class="card-title">Enable phpMyAdmin</div>
+      <div class="code-block">
+        <pre><code>sudo a2enconf phpmyadmin.conf</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 9 -->
+    <div class="card">
+      <div class="card-title">Fix if previous command is giving an error</div>
+      <div class="code-block">
+        <pre><code>sudo ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+sudo a2enconf phpmyadmin.conf</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 10 -->
+    <div class="card">
+      <div class="card-title">Restart apache2</div>
+      <div class="code-block">
+        <pre><code>sudo systemctl restart apache2</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 11 -->
+    <div class="card">
+      <div class="card-title">Login Mysql</div>
+      <div class="code-block">
+        <pre><code>sudo mysql</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 12 (Updated and Corrected Syntax) -->
+    <div class="card">
+      <div class="card-title">Change phpMyAdmin Password</div>
+      <div class="code-block">
+        <pre><code>ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'H4q6A6(C5sFZy)c';</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 13 -->
+    <div class="card">
+      <div class="card-title">Disable phpMyAdmin</div>
+      <div class="code-block">
+        <pre><code>sudo a2disconf phpmyadmin.conf
+sudo systemctl restart apache2</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 14 -->
+    <div class="card">
+      <div class="card-title">Enable File Permission</div>
+      <div class="code-block">
+        <pre><code>sudo chown ubuntu /var/www/html</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 15 -->
+    <div class="card">
+      <div class="card-title">Free SSL</div>
+      <div class="code-block">
+        <pre><code>sudo apt install certbot python3-certbot-apache
+sudo certbot --apache -d test.domain.com -d www.test.domain.com</code></pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function copyCode(button) {
+      // Find the specific code element inside the parent structure
+      const preElement = button.previousElementSibling;
+      const codeElement = preElement.querySelector('code');
+      const textToCopy = codeElement.innerText;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        // --- 1. Button feedback ---
+        button.textContent = 'Copied!';
+        button.classList.add('copied');
+
+        // --- 2. Text Highlight feedback (NEW) ---
+        // Add the highlight class to the <code> element itself
+        codeElement.classList.add('highlight-text');
+
+        // Set a timeout to revert both feedbacks after 2 seconds
+        setTimeout(() => {
+          // Revert button
+          button.textContent = 'Copy';
+          button.classList.remove('copied');
+          
+          // Revert text highlight
+          codeElement.classList.remove('highlight-text');
+        }, 2000);
+
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        // Handle fallback if necessary
+      });
+    }
+  </script>
+</body>
+</html>
