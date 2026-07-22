@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>lamp-stack-setup.sh — session log</title>
+<style>
+  :root{
+    --bg:            #0a0e14;
+    --bg-raised:     #10151d;
+    --bg-inset:      #0d1119;
+    --border:        #1c2430;
+    --border-soft:   #161c27;
+    --text:          #d8dee9;
+    --text-dim:      #62697a;
+    --text-faint:    #3d434f;
+    --accent:        #ffb454;
+    --accent-glow-strong: rgba(255,180,84,0.32);
+    --ok:            #7ee787;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255,180,84,0.05), transparent 60%), var(--bg);
+    color:var(--text); font-family:var(--sans); min-height:100vh;
+    padding:3rem 1.25rem 6rem; display:flex; justify-content:center;
+  }
+  .terminal{ width:100%; max-width:760px; }
+  .win-bar{
+    background:var(--bg-raised); border:1px solid var(--border); border-bottom:none;
+    border-radius:10px 10px 0 0; padding:0.7rem 1rem; display:flex; align-items:center; gap:0.9rem;
+  }
+  .dots{ display:flex; gap:6px; flex-shrink:0; }
+  .dot{ width:10px; height:10px; border-radius:50%; background:var(--border); border:1px solid var(--text-faint); }
+  .win-title{ font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); flex:1; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .win-status{ font-family:var(--mono); font-size:0.7rem; color:var(--text-faint); flex-shrink:0; }
+  .grep-row{
+    background:var(--bg-inset); border-left:1px solid var(--border); border-right:1px solid var(--border);
+    padding:0.85rem 1.1rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--mono); font-size:0.85rem;
+  }
+  .grep-prompt{ color:var(--accent); user-select:none; }
+  #grep-input{ background:transparent; border:none; outline:none; color:var(--text); font-family:var(--mono); font-size:0.85rem; flex:1; caret-color:var(--accent); }
+  #grep-input::placeholder{ color:var(--text-faint); }
+  .grep-count{ color:var(--text-faint); font-size:0.72rem; flex-shrink:0; }
+  .log{ background:var(--bg-raised); border:1px solid var(--border); border-top:1px solid var(--border-soft); border-radius:0 0 10px 10px; padding:0.5rem 0; }
+  .entry{ display:grid; grid-template-columns:2.75rem 1fr; padding:1.1rem 1.1rem 1.1rem 0; border-bottom:1px solid var(--border-soft); transition:background-color 0.15s; }
+  .entry:last-child{ border-bottom:none; }
+  .entry:hover{ background:rgba(255,255,255,0.012); }
+  .entry.hidden{ display:none; }
+  .line-no{ font-family:var(--mono); font-size:0.72rem; color:var(--text-faint); text-align:right; padding-right:0.9rem; padding-top:0.15rem; user-select:none; border-right:1px solid var(--border-soft); }
+  .entry-body{ padding-left:1rem; min-width:0; }
+  .comment{ font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); margin-bottom:0.55rem; display:flex; gap:0.5rem; }
+  .comment .hash{ color:var(--text-faint); }
+  .cmd-line{ display:flex; align-items:flex-start; gap:0.6rem; background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:6px; padding:0.65rem 0.8rem; }
+  .cmd-line + .cmd-line{ margin-top:0.4rem; }
+  .prompt-sym{ font-family:var(--mono); font-size:0.88rem; color:var(--ok); flex-shrink:0; user-select:none; padding-top:0.05rem; }
+  .prompt-sym.mysql{ color:var(--accent); }
+  code.cmdtext{ font-family:var(--mono); font-size:0.88rem; line-height:1.55; color:var(--text); white-space:pre-wrap; word-break:break-word; flex:1; padding:0 2px; border-radius:3px; transition:background-color 0.2s, box-shadow 0.2s; }
+  code.cmdtext.lit{ background:var(--accent-glow-strong); box-shadow:0 0 0 1px var(--accent-glow-strong); }
+  .copy-tag{ font-family:var(--mono); font-size:0.74rem; color:var(--text-faint); background:none; border:none; cursor:pointer; flex-shrink:0; padding:0.1rem 0.2rem; transition:color 0.15s; white-space:nowrap; }
+  .copy-tag:hover{ color:var(--text); }
+  .copy-tag.copied{ color:var(--accent); }
+  .cursor-row{ display:flex; align-items:center; gap:0.6rem; padding:1.2rem 1.1rem 1.2rem 3.75rem; font-family:var(--mono); font-size:0.88rem; color:var(--text-dim); }
+  .cursor-blink{ width:8px; height:1.1em; background:var(--accent); display:inline-block; animation:blink 1s step-end infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+  h1.masthead{ font-family:var(--mono); font-size:0.95rem; color:var(--text-dim); text-align:center; margin-bottom:1.4rem; font-weight:500; letter-spacing:0.03em; }
+  h1.masthead span{ color:var(--accent); }
+  @media (max-width:520px){ .entry{ grid-template-columns:2rem 1fr; padding-right:0.7rem; } .line-no{ font-size:0.64rem; padding-right:0.5rem; } .entry-body{ padding-left:0.6rem; } code.cmdtext{ font-size:0.82rem; } }
+  @media (prefers-reduced-motion: reduce){ .cursor-blink{ animation:none; } *{ transition:none !important; } }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <h1 class="masthead">// <span>LAMP</span> stack &amp; SSL — server bootstrap log</h1>
+  <div class="win-bar">
+    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="win-title">ubuntu@server: lamp-stack-setup.sh</div>
+    <div class="win-status">15 steps</div>
+  </div>
+  <div class="grep-row">
+    <span class="grep-prompt">$ grep</span>
+    <input id="grep-input" type="text" placeholder="filter commands…" autocomplete="off" spellcheck="false">
+    <span class="grep-count" id="grep-count"></span>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+<script>
+const steps = [
+  { note: "switch to the deploy user", cmds: [{p:"$", t:"ubuntu"}] },
+  { note: "clear the scrollback", cmds: [{p:"$", t:"clear"}] },
+  { note: "refresh package lists", cmds: [{p:"$", t:"sudo apt-get update"}] },
+  { note: "install the database server", cmds: [{p:"$", t:"sudo apt-get install mysql-server"}] },
+  { note: "lock down the fresh install", cmds: [{p:"$", t:"sudo mysql_secure_installation"}] },
+  { note: "install the web server", cmds: [{p:"$", t:"sudo apt-get install apache2"}] },
+  { note: "install PHP + the apache module", cmds: [{p:"$", t:"sudo apt-get install php libapache2-mod-php"}] },
+  { note: "reload apache to pick up PHP", cmds: [{p:"$", t:"sudo systemctl restart apache2"}] },
+  { note: "install phpMyAdmin", cmds: [{p:"$", t:"sudo apt-get install phpmyadmin php-mbstring"}] },
+  { note: "enable the phpMyAdmin config", cmds: [{p:"$", t:"sudo a2enconf phpmyadmin.conf"}] },
+  { note: "…if that config wasn't found, symlink it first", cmds: [
+      {p:"$", t:"sudo ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf"},
+      {p:"$", t:"sudo a2enconf phpmyadmin.conf"}
+  ]},
+  { note: "restart apache once more", cmds: [{p:"$", t:"sudo systemctl restart apache2"}] },
+  { note: "open a MySQL shell", cmds: [{p:"$", t:"sudo mysql"}] },
+  { note: "set the root password used by phpMyAdmin", cmds: [{p:"mysql>", t:"ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'H4q6A6(C5sFZy)c';"}] },
+  { note: "disable phpMyAdmin when you're done with it", cmds: [
+      {p:"$", t:"sudo a2disconf phpmyadmin.conf"},
+      {p:"$", t:"sudo systemctl restart apache2"}
+  ]},
+  { note: "give the deploy user ownership of the web root", cmds: [{p:"$", t:"sudo chown ubuntu /var/www/html"}] },
+  { note: "issue a free TLS certificate", cmds: [
+      {p:"$", t:"sudo apt install certbot python3-certbot-apache"},
+      {p:"$", t:"sudo certbot --apache -d test.domain.com -d www.test.domain.com"}
+  ]},
+];
+const logEl = document.getElementById('log');
+let currentHighlighted = null;
+function render(){
+  logEl.innerHTML = '';
+  steps.forEach((step, i) => {
+    const entry = document.createElement('div');
+    entry.className = 'entry';
+    entry.dataset.search = (step.note + ' ' + step.cmds.map(c=>c.t).join(' ')).toLowerCase();
+    const lineNo = document.createElement('div');
+    lineNo.className = 'line-no';
+    lineNo.textContent = String(i+1).padStart(3,'0');
+    const body = document.createElement('div');
+    body.className = 'entry-body';
+    const comment = document.createElement('div');
+    comment.className = 'comment';
+    comment.innerHTML = '<span class="hash">#</span><span>' + step.note + '</span>';
+    body.appendChild(comment);
+    step.cmds.forEach(cmd => {
+      const line = document.createElement('div');
+      line.className = 'cmd-line';
+      const sym = document.createElement('span');
+      sym.className = 'prompt-sym' + (cmd.p === 'mysql>' ? ' mysql' : '');
+      sym.textContent = cmd.p;
+      const code = document.createElement('code');
+      code.className = 'cmdtext';
+      code.textContent = cmd.t;
+      const btn = document.createElement('button');
+      btn.className = 'copy-tag';
+      btn.type = 'button';
+      btn.textContent = '[copy]';
+      btn.setAttribute('aria-label', 'Copy command: ' + cmd.t);
+      btn.addEventListener('click', () => copyCmd(cmd.t, code, btn));
+      line.appendChild(sym); line.appendChild(code); line.appendChild(btn);
+      body.appendChild(line);
+    });
+    entry.appendChild(lineNo); entry.appendChild(body);
+    logEl.appendChild(entry);
+  });
+  const cursorRow = document.createElement('div');
+  cursorRow.className = 'cursor-row';
+  cursorRow.innerHTML = '<span>$</span><span class="cursor-blink"></span>';
+  logEl.appendChild(cursorRow);
+}
+function copyCmd(text, codeEl, btn){
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '[copied]';
+    btn.classList.add('copied');
+    if (currentHighlighted && currentHighlighted !== codeEl){ currentHighlighted.classList.remove('lit'); }
+    codeEl.classList.add('lit');
+    currentHighlighted = codeEl;
+    setTimeout(() => { btn.textContent = '[copy]'; btn.classList.remove('copied'); }, 1600);
+  }).catch(err => console.error('copy failed', err));
+}
+document.getElementById('grep-input').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const entries = logEl.querySelectorAll('.entry');
+  let visible = 0;
+  entries.forEach(entry => {
+    const match = !q || entry.dataset.search.includes(q);
+    entry.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+  document.getElementById('grep-count').textContent = q ? (visible + ' match' + (visible===1?'':'es')) : '';
+});
+render();
+</script>
+</body>
+</html>
